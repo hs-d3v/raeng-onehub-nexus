@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,6 +7,16 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import QRReader from "./pages/QRReader";
+import Chat from "./pages/Chat";
+import Contracts from "./pages/Contracts";
+import Employees from "./pages/Employees";
+import Epi from "./pages/Epi";
+import Tools from "./pages/Tools";
+import Machines from "./pages/Machines";
+import Supplies from "./pages/Supplies";
+import Reports from "./pages/Reports";
+import Notifications from "./pages/Notifications";
+import Settings from "./pages/Settings";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import NotFound from "./pages/NotFound";
 
@@ -20,18 +31,17 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
-          {/* Placeholder routes */}
-          <Route path="/chat" element={<DashboardLayout><div className="py-12 text-center">Módulo de Chat em desenvolvimento</div></DashboardLayout>} />
-          <Route path="/contracts" element={<DashboardLayout><div className="py-12 text-center">Módulo de Contratos em desenvolvimento</div></DashboardLayout>} />
-          <Route path="/employees" element={<DashboardLayout><div className="py-12 text-center">Módulo de Colaboradores em desenvolvimento</div></DashboardLayout>} />
-          <Route path="/epi" element={<DashboardLayout><div className="py-12 text-center">Módulo de EPIs em desenvolvimento</div></DashboardLayout>} />
-          <Route path="/tools" element={<DashboardLayout><div className="py-12 text-center">Módulo de Ferramentas em desenvolvimento</div></DashboardLayout>} />
-          <Route path="/machines" element={<DashboardLayout><div className="py-12 text-center">Módulo de Máquinas em desenvolvimento</div></DashboardLayout>} />
-          <Route path="/supplies" element={<DashboardLayout><div className="py-12 text-center">Módulo de Insumos em desenvolvimento</div></DashboardLayout>} />
+          <Route path="/chat" element={<DashboardLayout><Chat /></DashboardLayout>} />
+          <Route path="/contracts" element={<DashboardLayout><Contracts /></DashboardLayout>} />
+          <Route path="/employees" element={<DashboardLayout><Employees /></DashboardLayout>} />
+          <Route path="/epi" element={<DashboardLayout><Epi /></DashboardLayout>} />
+          <Route path="/tools" element={<DashboardLayout><Tools /></DashboardLayout>} />
+          <Route path="/machines" element={<DashboardLayout><Machines /></DashboardLayout>} />
+          <Route path="/supplies" element={<DashboardLayout><Supplies /></DashboardLayout>} />
           <Route path="/qr-reader" element={<DashboardLayout><QRReader /></DashboardLayout>} />
-          <Route path="/reports" element={<DashboardLayout><div className="py-12 text-center">Módulo de Relatórios em desenvolvimento</div></DashboardLayout>} />
-          <Route path="/notifications" element={<DashboardLayout><div className="py-12 text-center">Módulo de Notificações em desenvolvimento</div></DashboardLayout>} />
-          <Route path="/settings" element={<DashboardLayout><div className="py-12 text-center">Módulo de Configurações em desenvolvimento</div></DashboardLayout>} />
+          <Route path="/reports" element={<DashboardLayout><Reports /></DashboardLayout>} />
+          <Route path="/notifications" element={<DashboardLayout><Notifications /></DashboardLayout>} />
+          <Route path="/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
