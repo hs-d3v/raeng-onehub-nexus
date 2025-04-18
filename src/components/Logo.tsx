@@ -5,26 +5,21 @@ import { cn } from "@/lib/utils";
 interface LogoProps {
   className?: string;
   size?: "sm" | "md" | "lg";
-  showText?: boolean;
 }
 
-export function Logo({ className, size = "md", showText = true }: LogoProps) {
+export function Logo({ className, size = "md" }: LogoProps) {
   const sizeClasses = {
-    sm: "h-8",
-    md: "h-10",
-    lg: "h-14"
+    sm: "h-6",
+    md: "h-8",
+    lg: "h-12"
   };
   
   return (
-    <div className={cn("flex items-center gap-2", className)}>
-      <img 
-        src="/lovable-uploads/cbe24588-625e-4a2e-a919-3c7c1214a913.png" 
-        alt="RAENG OneHub" 
-        className={cn(sizeClasses[size])}
-      />
-      {showText && (
-        <span className="text-white font-semibold hidden md:block">RAENG OneHub</span>
-      )}
+    <div className={cn("flex items-center gap-2 font-bold", className)}>
+      <div className="flex items-center justify-center bg-brand-purple rounded-lg overflow-hidden">
+        <span className={cn("text-white px-2", sizeClasses[size])}>RAENG</span>
+      </div>
+      <span className="text-brand-blue font-semibold">OneHub</span>
     </div>
   );
 }

@@ -29,11 +29,9 @@ import {
   LogOut,
   ChevronLeft,
 } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export function AppSidebar() {
-  const location = useLocation();
-  
   const mainMenuItems = [
     {
       title: "Dashboard",
@@ -89,7 +87,6 @@ export function AppSidebar() {
       title: "Notificações",
       icon: Bell,
       url: "/notifications",
-      badge: "3",
     },
     {
       title: "Configurações",
@@ -98,40 +95,27 @@ export function AppSidebar() {
     },
   ];
 
-  const isActiveRoute = (url: string) => {
-    return location.pathname === url;
-  };
-
   return (
-    <Sidebar className="bg-brand-blue border-r border-brand-blue/20">
+    <Sidebar>
       <SidebarHeader>
         <div className="flex justify-between items-center p-4">
           <Logo />
-          <Button variant="ghost" size="icon" className="md:hidden text-white">
+          <Button variant="ghost" size="icon" className="md:hidden">
             <ChevronLeft className="h-4 w-4" />
           </Button>
         </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-white/70">Menu</SidebarGroupLabel>
+          <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainMenuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={isActiveRoute(item.url)}
-                    tooltip={item.title}
-                  >
-                    <Link to={item.url} className="text-white group-data-[collapsible=icon]:text-white/80">
+                  <SidebarMenuButton asChild>
+                    <Link to={item.url}>
                       <item.icon size={20} />
                       <span>{item.title}</span>
-                      {item.badge && (
-                        <div className="ml-auto bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                          {item.badge}
-                        </div>
-                      )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -141,7 +125,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="p-4">
-        <Button variant="outline" className="w-full justify-start text-white border-white/20 hover:bg-white/10">
+        <Button variant="outline" className="w-full justify-start">
           <LogOut className="mr-2 h-4 w-4" /> Sair
         </Button>
       </SidebarFooter>
