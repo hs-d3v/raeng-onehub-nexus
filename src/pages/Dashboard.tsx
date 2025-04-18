@@ -1,267 +1,319 @@
 
+import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell } from 'recharts';
-import { 
-  AlertTriangle, 
-  Boxes, 
-  Calendar, 
-  FileText, 
-  Users, 
+import { Progress } from "@/components/ui/progress";
+import { BarChart, LineChart } from "@/components/ui/chart";
+import { Badge } from "@/components/ui/badge";
+import { Avatar } from "@/components/ui/avatar";
+import {
+  Users,
+  ChevronUp,
+  ChevronDown,
   Clock,
-  TrendingDown,
-  TrendingUp,
-  ShieldAlert,
-  Check
-} from 'lucide-react';
-import { Button } from "@/components/ui/button";
+  CheckCircle,
+  AlertCircle,
+  FileText,
+  Package,
+  Settings,
+  ShoppingBag,
+} from "lucide-react";
 
-export default function Dashboard() {
-  // Dados de exemplo para os gráficos
-  const contractsStatusData = [
-    { name: 'Ativos', value: 18 },
-    { name: 'Vencendo', value: 4 },
-    { name: 'Concluídos', value: 12 }
+const Dashboard = () => {
+  // Sample data for charts
+  const barChartData = [
+    { name: "Jan", total: 4500 },
+    { name: "Feb", total: 6000 },
+    { name: "Mar", total: 5300 },
+    { name: "Apr", total: 7800 },
+    { name: "May", total: 4200 },
+    { name: "Jun", total: 9000 },
   ];
-  
-  const employeeStatusData = [
-    { name: 'Ativos', value: 84 },
-    { name: 'Afastados', value: 7 },
-    { name: 'Férias', value: 9 }
-  ];
-  
-  const stockLevelsData = [
-    { name: 'EPIs', normal: 67, crítico: 12 },
-    { name: 'Ferramentas', normal: 48, crítico: 8 },
-    { name: 'Insumos', normal: 120, crítico: 15 },
-  ];
-  
-  const safetyIndicatorsData = [
-    { mês: 'Jan', acidentes: 2, quaseAcidentes: 5 },
-    { mês: 'Fev', acidentes: 1, quaseAcidentes: 4 },
-    { mês: 'Mar', acidentes: 0, quaseAcidentes: 3 },
-    { mês: 'Abr', acidentes: 0, quaseAcidentes: 6 },
-    { mês: 'Mai', acidentes: 1, quaseAcidentes: 4 },
-    { mês: 'Jun', acidentes: 0, quaseAcidentes: 2 },
-  ];
-  
-  const COLORS = ['#2563eb', '#ea580c', '#16a34a'];
 
-  const upcomingEvents = [
-    { id: 1, title: 'Renovação de Contrato #1245', date: '25/04/2025', type: 'contract' },
-    { id: 2, title: 'Manutenção preventiva', date: '28/04/2025', type: 'maintenance' },
-    { id: 3, title: 'Vencimento ASO - Carlos Silva', date: '30/04/2025', type: 'employee' },
-    { id: 4, title: 'Inventário mensal', date: '01/05/2025', type: 'inventory' }
+  const lineChartData = [
+    { name: "Jan", value: 2400 },
+    { name: "Feb", value: 1398 },
+    { name: "Mar", value: 9800 },
+    { name: "Apr", value: 3908 },
+    { name: "May", value: 4800 },
+    { name: "Jun", value: 3800 },
+  ];
+
+  const tasks = [
+    { id: 1, title: "Novo contrato Empresa X", status: "completed", date: "24/04/2025" },
+    { id: 2, title: "Reunião com equipe de segurança", status: "pending", date: "26/04/2025" },
+    { id: 3, title: "Vistoria em campo - Obra Y", status: "pending", date: "29/04/2025" },
+    { id: 4, title: "Relatório mensal de EPI", status: "pending", date: "30/04/2025" },
   ];
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Dashboard</h1>
-      
-      {/* Status Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-l-4 border-l-brand-blue">
-          <CardContent className="pt-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Contratos Ativos</p>
-                <h3 className="text-2xl font-bold">18</h3>
-                <p className="text-xs text-brand-green flex items-center mt-1">
-                  <TrendingUp className="h-3 w-3 mr-1" /> 12% este mês
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-brand-blue/10 rounded-full flex items-center justify-center">
-                <FileText className="h-6 w-6 text-brand-blue" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-l-4 border-l-brand-green">
-          <CardContent className="pt-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Colaboradores</p>
-                <h3 className="text-2xl font-bold">84</h3>
-                <p className="text-xs text-brand-green flex items-center mt-1">
-                  <TrendingUp className="h-3 w-3 mr-1" /> 3 contratações
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-brand-green/10 rounded-full flex items-center justify-center">
-                <Users className="h-6 w-6 text-brand-green" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-l-4 border-l-brand-orange">
-          <CardContent className="pt-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Alertas de Estoque</p>
-                <h3 className="text-2xl font-bold">12</h3>
-                <p className="text-xs text-brand-orange flex items-center mt-1">
-                  <AlertTriangle className="h-3 w-3 mr-1" /> Itens em nível crítico
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-brand-orange/10 rounded-full flex items-center justify-center">
-                <Boxes className="h-6 w-6 text-brand-orange" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-l-4 border-l-brand-purple">
-          <CardContent className="pt-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Próximos Eventos</p>
-                <h3 className="text-2xl font-bold">4</h3>
-                <p className="text-xs text-muted-foreground flex items-center mt-1">
-                  <Clock className="h-3 w-3 mr-1" /> Próximos 7 dias
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-brand-purple/10 rounded-full flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-brand-purple" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Status de Contratos */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Status de Contratos</CardTitle>
-            <CardDescription>Visão geral dos seus contratos</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-72">
-              <ChartContainer
-                config={{
-                  ativos: { color: COLORS[0] },
-                  vencendo: { color: COLORS[1] },
-                  concluídos: { color: COLORS[2] }
-                }}
-              >
-                <PieChart>
-                  <Pie
-                    data={contractsStatusData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {contractsStatusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <ChartTooltip />
-                </PieChart>
-              </ChartContainer>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Indicadores de Segurança */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Indicadores de Segurança</CardTitle>
-            <CardDescription>Estatísticas de acidentes e quase acidentes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-72">
-              <ChartContainer
-                config={{
-                  acidentes: { color: "#ea580c" },
-                  quaseAcidentes: { color: "#2563eb" }
-                }}
-              >
-                <LineChart data={safetyIndicatorsData}>
-                  <XAxis dataKey="mês" />
-                  <YAxis />
-                  <ChartTooltip />
-                  <Line type="monotone" dataKey="acidentes" stroke="#ea580c" />
-                  <Line type="monotone" dataKey="quaseAcidentes" stroke="#2563eb" />
-                </LineChart>
-              </ChartContainer>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Níveis de Estoque */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Níveis de Estoque</CardTitle>
-            <CardDescription>Por categoria</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-72">
-              <ChartContainer
-                config={{
-                  normal: { color: "#16a34a" },
-                  crítico: { color: "#ea580c" }
-                }}
-              >
-                <BarChart data={stockLevelsData}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <ChartTooltip />
-                  <Legend />
-                  <Bar dataKey="normal" stackId="a" fill="#16a34a" />
-                  <Bar dataKey="crítico" stackId="a" fill="#ea580c" />
-                </BarChart>
-              </ChartContainer>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Calendário de Eventos */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Calendário de Eventos</CardTitle>
-            <CardDescription>Próximos eventos e vencimentos</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {upcomingEvents.map(event => (
-                <div key={event.id} className="flex items-start gap-3 p-3 border rounded-lg">
-                  {event.type === 'contract' && (
-                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-brand-blue/10">
-                      <FileText className="h-4 w-4 text-brand-blue" />
-                    </div>
-                  )}
-                  {event.type === 'maintenance' && (
-                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-brand-orange/10">
-                      <ShieldAlert className="h-4 w-4 text-brand-orange" />
-                    </div>
-                  )}
-                  {event.type === 'employee' && (
-                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-brand-purple/10">
-                      <Users className="h-4 w-4 text-brand-purple" />
-                    </div>
-                  )}
-                  {event.type === 'inventory' && (
-                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-brand-green/10">
-                      <Check className="h-4 w-4 text-brand-green" />
-                    </div>
-                  )}
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="md:w-3/4">
+          <h1 className="text-2xl font-bold mb-2 text-brand-gray-700">Dashboard</h1>
+          <p className="text-brand-gray-500 mb-6">
+            Visão geral do seu sistema de gestão de segurança
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <Card className="argon-card">
+              <CardContent className="p-0 pt-6">
+                <div className="flex justify-between">
                   <div>
-                    <p className="font-medium">{event.title}</p>
-                    <p className="text-sm text-muted-foreground">{event.date}</p>
+                    <p className="text-sm text-brand-gray-600">Usuários</p>
+                    <h3 className="text-2xl font-semibold mt-2">2,356</h3>
+                  </div>
+                  <div className="bg-gradient-primary rounded-full p-3 text-white">
+                    <Users className="h-6 w-6" />
                   </div>
                 </div>
-              ))}
-              <Button variant="outline" className="w-full">Ver Todos os Eventos</Button>
+                <div className="mt-4">
+                  <Progress value={70} />
+                  <div className="flex justify-between text-xs text-brand-gray-600 mt-2">
+                    <span className="inline-flex items-center">
+                      <ChevronUp className="h-4 w-4 text-brand-green mr-1" /> 3.48%
+                    </span>
+                    <span>Desde o último mês</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="argon-card">
+              <CardContent className="p-0 pt-6">
+                <div className="flex justify-between">
+                  <div>
+                    <p className="text-sm text-brand-gray-600">Contratos</p>
+                    <h3 className="text-2xl font-semibold mt-2">152</h3>
+                  </div>
+                  <div className="bg-gradient-info rounded-full p-3 text-white">
+                    <FileText className="h-6 w-6" />
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <Progress value={80} indicatorClassName="bg-gradient-info" />
+                  <div className="flex justify-between text-xs text-brand-gray-600 mt-2">
+                    <span className="inline-flex items-center">
+                      <ChevronUp className="h-4 w-4 text-brand-green mr-1" /> 12.4%
+                    </span>
+                    <span>Desde o último mês</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="argon-card">
+              <CardContent className="p-0 pt-6">
+                <div className="flex justify-between">
+                  <div>
+                    <p className="text-sm text-brand-gray-600">Equipamentos</p>
+                    <h3 className="text-2xl font-semibold mt-2">458</h3>
+                  </div>
+                  <div className="bg-gradient-warning rounded-full p-3 text-white">
+                    <Package className="h-6 w-6" />
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <Progress value={55} indicatorClassName="bg-gradient-warning" />
+                  <div className="flex justify-between text-xs text-brand-gray-600 mt-2">
+                    <span className="inline-flex items-center">
+                      <ChevronDown className="h-4 w-4 text-brand-red mr-1" /> 2.7%
+                    </span>
+                    <span>Desde o último mês</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="argon-card mb-6">
+            <CardHeader className="pb-0">
+              <CardTitle className="text-xl text-brand-gray-700">Visão Geral da Performance</CardTitle>
+              <CardDescription className="text-brand-gray-500">
+                Atividade nos últimos 6 meses
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="h-80">
+                <LineChart
+                  data={lineChartData}
+                  categories={["value"]}
+                  index="name"
+                  colors={["#5e72e4"]}
+                  valueFormatter={(value) => `${value} ações`}
+                  className="h-full mt-4"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        <div className="md:w-1/4">
+          <div className="sticky top-4">
+            <Card className="argon-card mb-6">
+              <CardHeader className="pb-0">
+                <CardTitle className="text-lg text-brand-gray-700">Tarefas Pendentes</CardTitle>
+                <CardDescription className="text-brand-gray-500">
+                  Suas próximas atividades
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <div className="space-y-4">
+                  {tasks.map((task) => (
+                    <div key={task.id} className="flex items-start space-x-3">
+                      {task.status === "completed" ? (
+                        <div className="mt-0.5 bg-green-100 rounded-full p-1">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        </div>
+                      ) : (
+                        <div className="mt-0.5 bg-blue-100 rounded-full p-1">
+                          <Clock className="h-4 w-4 text-blue-600" />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <p className={`text-sm font-medium ${task.status === "completed" ? "line-through text-brand-gray-400" : "text-brand-gray-700"}`}>
+                          {task.title}
+                        </p>
+                        <p className="text-xs text-brand-gray-500 mt-1">
+                          {task.date}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button className="w-full mt-6 text-center text-sm text-brand-blue font-medium">
+                  Ver todas as tarefas
+                </button>
+              </CardContent>
+            </Card>
+
+            <Card className="argon-card">
+              <CardHeader className="pb-0">
+                <CardTitle className="text-lg text-brand-gray-700">Equipe</CardTitle>
+                <CardDescription className="text-brand-gray-500">
+                  Membros da equipe
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <Avatar className="h-10 w-10 bg-gradient-primary">
+                      <span className="text-white">JD</span>
+                    </Avatar>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-brand-gray-700">João Dantas</p>
+                      <p className="text-xs text-brand-gray-500">Administrador</p>
+                    </div>
+                    <div className="ml-auto">
+                      <Badge className="argon-badge argon-badge-success">Online</Badge>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <Avatar className="h-10 w-10 bg-gradient-info">
+                      <span className="text-white">MS</span>
+                    </Avatar>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-brand-gray-700">Maria Silva</p>
+                      <p className="text-xs text-brand-gray-500">Segurança</p>
+                    </div>
+                    <div className="ml-auto">
+                      <Badge className="argon-badge argon-badge-warning">Ausente</Badge>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <Avatar className="h-10 w-10 bg-gradient-warning">
+                      <span className="text-white">PL</span>
+                    </Avatar>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-brand-gray-700">Pedro Lima</p>
+                      <p className="text-xs text-brand-gray-500">Técnico</p>
+                    </div>
+                    <div className="ml-auto">
+                      <Badge className="argon-badge argon-badge-danger">Offline</Badge>
+                    </div>
+                  </div>
+                </div>
+                <button className="w-full mt-6 text-center text-sm text-brand-blue font-medium">
+                  Ver toda a equipe
+                </button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="argon-card">
+          <CardHeader className="pb-0">
+            <CardTitle className="text-xl text-brand-gray-700">Distribuição por Categorias</CardTitle>
+            <CardDescription className="text-brand-gray-500">
+              Equipamentos por categoria
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="h-80">
+              <BarChart
+                data={barChartData}
+                categories={["total"]}
+                index="name"
+                colors={["#5e72e4"]}
+                valueFormatter={(value) => `${value} unidades`}
+                className="h-full"
+              />
             </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="argon-card">
+          <CardHeader className="pb-0">
+            <CardTitle className="text-xl text-brand-gray-700">Alertas Recentes</CardTitle>
+            <CardDescription className="text-brand-gray-500">
+              Últimas notificações do sistema
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <div className="space-y-4">
+              <div className="p-3 rounded-md bg-red-50 border border-red-100 flex items-center">
+                <div className="bg-red-100 rounded-full p-1.5 mr-3">
+                  <AlertCircle className="h-5 w-5 text-red-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-red-700">EPI próximo ao vencimento</p>
+                  <p className="text-xs text-red-500 mt-0.5">3 itens expiram em 7 dias</p>
+                </div>
+              </div>
+              <div className="p-3 rounded-md bg-yellow-50 border border-yellow-100 flex items-center">
+                <div className="bg-yellow-100 rounded-full p-1.5 mr-3">
+                  <AlertCircle className="h-5 w-5 text-yellow-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-yellow-700">Manutenção preventiva</p>
+                  <p className="text-xs text-yellow-500 mt-0.5">Máquina #123 precisa de verificação</p>
+                </div>
+              </div>
+              <div className="p-3 rounded-md bg-green-50 border border-green-100 flex items-center">
+                <div className="bg-green-100 rounded-full p-1.5 mr-3">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-green-700">Contrato renovado</p>
+                  <p className="text-xs text-green-500 mt-0.5">Contrato #A45B renovado com sucesso</p>
+                </div>
+              </div>
+              <div className="p-3 rounded-md bg-blue-50 border border-blue-100 flex items-center">
+                <div className="bg-blue-100 rounded-full p-1.5 mr-3">
+                  <ShoppingBag className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-blue-700">Novo pedido de insumos</p>
+                  <p className="text-xs text-blue-500 mt-0.5">Pedido #567 aguardando aprovação</p>
+                </div>
+              </div>
+            </div>
+            <button className="w-full mt-6 text-center text-sm text-brand-blue font-medium">
+              Ver todos os alertas
+            </button>
           </CardContent>
         </Card>
       </div>
     </div>
   );
-}
+};
+
+export default Dashboard;
