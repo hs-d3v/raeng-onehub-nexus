@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { HardHat, Search, Plus, AlertTriangle, CheckCircle, Eye, Edit, Trash2, MoreVertical, Calendar } from "lucide-react";
+import { HardHat, Search, Plus, AlertTriangle, CheckCircle, Eye, Edit, Trash2, MoreVertical, Calendar, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { 
   DropdownMenu,

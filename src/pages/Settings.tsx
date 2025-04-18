@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar } from "@/components/ui/avatar";
-import { Settings as SettingsIcon, User, Bell, Shield, Users, Layers, Key, Building, Mail, Phone, Upload, Save, Languages } from "lucide-react";
+import { 
+  Settings as SettingsIcon, 
+  User, 
+  Bell, 
+  Shield, 
+  Users, 
+  Layers, 
+  Key, 
+  Building, 
+  Mail, 
+  Phone, 
+  Upload, 
+  Save, 
+  Languages, 
+  Wrench,
+  Package2,
+  FileText,
+  HardHat
+} from "lucide-react";
 
 const Settings = () => {
   const { toast } = useToast();
