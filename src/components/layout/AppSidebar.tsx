@@ -105,15 +105,15 @@ export function AppSidebar() {
           </Button>
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="bg-brand-blue text-white">
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-white/70">Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainMenuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <Link to={item.url}>
+                    <Link to={item.url} className="text-white hover:bg-white/10">
                       <item.icon size={20} />
                       <span>{item.title}</span>
                     </Link>
@@ -124,8 +124,8 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-4">
-        <Button variant="outline" className="w-full justify-start">
+      <SidebarFooter className="p-4 bg-brand-blue text-white">
+        <Button variant="outline" className="w-full justify-start border-white/20 text-white hover:bg-white/10 hover:text-white">
           <LogOut className="mr-2 h-4 w-4" /> Sair
         </Button>
       </SidebarFooter>

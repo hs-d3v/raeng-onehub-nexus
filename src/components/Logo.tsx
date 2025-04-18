@@ -16,10 +16,10 @@ export function Logo({ className, size = "md" }: LogoProps) {
   
   return (
     <div className={cn("flex items-center gap-2 font-bold", className)}>
-      <div className="flex items-center justify-center bg-brand-purple rounded-lg overflow-hidden">
-        <span className={cn("text-white px-2", sizeClasses[size])}>RAENG</span>
+      <div className="flex items-center justify-center bg-white rounded-lg overflow-hidden">
+        <span className={cn("text-brand-blue px-2", sizeClasses[size])}>RAENG</span>
       </div>
-      <span className="text-brand-blue font-semibold">OneHub</span>
+      <span className="text-white font-semibold">OneHub</span>
     </div>
   );
 }
