@@ -1,73 +1,199 @@
-# Welcome to your Lovable project
+# OneHub RAENG Management System
 
-## Project info
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Vite](https://img.shields.io/badge/Bundler-Vite-blue.svg)](https://vitejs.dev/)
+[![React](https://img.shields.io/badge/Framework-React-61dafb.svg)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/Language-TypeScript-3178c6.svg)](https://www.typescriptlang.org/)
+[![License: MIT](https://img.shields.io/badge/Author-Dev.Hub-orange.svg)](https://github.com/hs-d3vhub)
 
-**URL**: https://lovable.dev/projects/0810ae38-697b-4e46-84dd-28f179f51220
+---
 
-## How can I edit this code?
+## 📖 Sobre o Projeto
 
-There are several ways of editing your application.
+OneHub RAENG é uma plataforma web de gestão integrada, desenvolvida com foco em segurança, que unifica o monitoramento de contratos, colaboradores, equipamentos e insumos. Seu principal objetivo é fornecer:
 
-**Use Lovable**
+- Controle completo de EPIs, treinamentos e ferramentas.
+- Rastreabilidade via QR Code para eficiência operacional.
+- Relatórios e indicadores detalhados para suporte à tomada de decisão.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/0810ae38-697b-4e46-84dd-28f179f51220) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🚀 Tecnologias Utilizadas
 
-**Use your preferred IDE**
+| Camada            | Ferramentas/Libraries                                   |
+| ----------------- | -------------------------------------------------------- |
+| **Interface**     | React, Tailwind CSS, Lucide Icons, shadcn/ui            |
+| **Estado & Dados**| React Query (ou SWR), Zustand (opcional)                |
+| **Validação**     | Zod, @hookform/resolvers                                 |
+| **Formulários**   | React Hook Form                                         |
+| **Bundler**       | Vite                                                    |
+| **Linter & Formatter** | ESLint, Prettier                                    |
+| **Testes**        | Vitest, React Testing Library                           |
+| **CI/CD**         | GitHub Actions, Vercel/Netlify                          |
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🗂 Estrutura de Pastas
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+src/
+├── assets/                  # Imagens, logos e arquivos estáticos
+├── components/              # Componentes reutilizáveis
+│   ├── BrandingColumn
+│   ├── LoginForm
+│   └── ...
+├── features/                # Estrutura orientada a features/domínios
+│   ├── auth/                # Login, cadastro, hooks, context
+│   ├── dashboard/
+│   └── colaboradores/
+├── hooks/                   # Custom React Hooks
+├── lib/                     # Utilitários, helpers, configurações
+├── pages/                   # Páginas principais (rota-padrão)
+├── providers/               # Context Providers (Theme, Auth, etc.)
+├── styles/                  # CSS global, variáveis, configurações do Tailwind
+└── utils/                   # Funções utilitárias variadas
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## ⚙️ Pré-requisitos
 
-**Use GitHub Codespaces**
+- Node.js v16+ ou Yarn
+- npm 8+ ou Yarn 1+
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
+## 💾 Instalação & Uso
 
-This project is built with:
+1. Clone o repositório:
+   ```bash
+   git clone https://github.com/hs-d3vhub/onehub-raeng-system.git
+   cd onehub-raeng-system
+   ```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+2. Instale as dependências:
+   ```bash
+   npm install
+   # ou com Yarn
+   yarn install
+   ```
 
-## How can I deploy this project?
+3. Configure variáveis de ambiente (se aplicável):
+   ```bash
+   cp .env.example .env
+   # edite .env com suas chaves/urls
+   ```
 
-Simply open [Lovable](https://lovable.dev/projects/0810ae38-697b-4e46-84dd-28f179f51220) and click on Share -> Publish.
+4. Execute em modo de desenvolvimento:
+   ```bash
+   npm run dev
+   # ou yarn dev
+   ```
+   - Acesse em `http://localhost:8080`
 
-## Can I connect a custom domain to my Lovable project?
+5. Para gerar build de produção:
+   ```bash
+   npm run build
+   # ou yarn build
+   ```
 
-Yes, you can!
+6. Preview da build de produção:
+   ```bash
+   npm run preview
+   # ou yarn preview
+   ```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+---
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## 📦 Scripts Disponíveis
+
+| Comando        | Descrição                                           |
+| -------------- | ---------------------------------------------------- |
+| `npm run dev`  | Inicia servidor de desenvolvimento (Hot Module Reload)|
+| `npm run build`| Gera build otimizada para produção                  |
+| `npm run preview` | Serve build de produção localmente                |
+| `npm run lint` | Executa ESLint em todos os arquivos                  |
+| `npm run format` | (opcional) Formata projeto com Prettier             |
+| `npm run test` | (opcional) Executa suíte de testes via Vitest       |
+
+---
+
+## 🛠️ Configurações de Lint & Formatação
+
+- **ESLint**: Configuração baseada em `@eslint/js` e `@typescript-eslint`.
+- **Prettier**: Recomenda-se criar `prettier.config.js` e usar `lint-staged` + Husky para pré-commits.
+
+Exemplo de `package.json`:
+
+```json
+{
+  "scripts": {
+    "lint": "eslint . --ext .ts,.tsx",
+    "format": "prettier --write .",
+    "test": "vitest"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  }
+}
+```
+
+---
+
+## ✅ Testes & Cobertura
+
+- Usar **Vitest** para testes unitários:
+  ```bash
+  npm run test
+  ```
+- Cobertura de testes automática configurável em `vitest.config.ts`.
+
+---
+
+## 🚀 CI/CD
+
+Sugestão de workflow GitHub Actions (`.github/workflows/ci.yml`):
+
+```yaml
+name: CI
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run build
+```
+
+Para deploy automático, use Vercel ou Netlify integrando o repositório.
+
+---
+
+## 🤝 Contribuição
+
+1. Fork do repositório
+2. Crie uma branch feature: `git checkout -b feature/nome-da-feature`
+3. Faça commits claros e atômicos
+4. Rode `npm run lint` e `npm run test`
+5. Abra um Pull Request descrevendo o que foi alterado
+
+---
+
+## 📜 Licença
+
+Este projeto é licenciado sob a **MIT License**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+---
+
+> Desenvolvido com ♥ por **Hugo Serra - Dev.Hub** | [GitHub](https://github.com/hs-d3vhub)
+
