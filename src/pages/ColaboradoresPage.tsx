@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -108,9 +109,9 @@ const ColaboradoresPage = () => {
       header: 'Colaborador', 
       accessorKey: 'colaborador',
       cell: (value: any, row: any) => {
-        const colaborador = row?.original;
-        if (!colaborador) return null;
+        if (!row || !row.original) return null;
         
+        const colaborador = row.original;
         return (
           <div className="flex items-center gap-3">
             <Avatar>
@@ -130,6 +131,8 @@ const ColaboradoresPage = () => {
       header: 'Departamento', 
       accessorKey: 'departamento',
       cell: (value: string) => {
+        if (!value) return null;
+        
         let color;
         switch(value) {
           case 'Operacional':
@@ -159,6 +162,8 @@ const ColaboradoresPage = () => {
       header: 'Status', 
       accessorKey: 'status',
       cell: (value: string) => {
+        if (!value) return null;
+        
         let badgeClass = "";
         switch(value) {
           case 'Ativo':
@@ -216,9 +221,9 @@ const ColaboradoresPage = () => {
       header: 'Ações', 
       accessorKey: 'acoes',
       cell: (value: any, row: any) => {
-        const colaborador = row?.original;
-        if (!colaborador) return null;
+        if (!row || !row.original) return null;
         
+        const colaborador = row.original;
         return (
           <div className="flex gap-2">
             <Button 
@@ -273,6 +278,15 @@ const ColaboradoresPage = () => {
       title: "Sucesso",
       description: "Colaborador cadastrado com sucesso",
     });
+  };
+
+  // Função para mapear os dados do colaborador para o formato esperado pelo DataTable
+  const prepareColaboradoresData = (colaboradores: any[]) => {
+    return colaboradores.map(col => ({
+      ...col,
+      status: col.ativo ? 'Ativo' : 'Inativo',
+      proxAso: new Date(new Date().setDate(new Date().getDate() + Math.floor(Math.random() * 180))).toISOString().split('T')[0]
+    }));
   };
   
   return (
@@ -419,12 +433,7 @@ const ColaboradoresPage = () => {
                     <TabsContent value="todos" className="pt-4">
                       <DataTable
                         columns={colaboradoresColumns}
-                        data={filtrarColaboradores().map(col => ({
-                          ...col,
-                          colaborador: col,
-                          status: col.ativo ? 'Ativo' : 'Inativo',
-                          proxAso: new Date(new Date().setDate(new Date().getDate() + Math.floor(Math.random() * 180))).toISOString().split('T')[0]
-                        }))}
+                        data={prepareColaboradoresData(filtrarColaboradores())}
                         itemsPerPage={10}
                       />
                     </TabsContent>
@@ -433,14 +442,7 @@ const ColaboradoresPage = () => {
                   <TabsContent value="ativos" className="pt-4">
                     <DataTable
                       columns={colaboradoresColumns}
-                      data={filtrarColaboradores()
-                        .filter(item => item.ativo)
-                        .map(col => ({
-                          ...col,
-                          colaborador: col,
-                          status: 'Ativo',
-                          proxAso: new Date(new Date().setDate(new Date().getDate() + Math.floor(Math.random() * 180))).toISOString().split('T')[0]
-                        }))}
+                      data={prepareColaboradoresData(filtrarColaboradores().filter(item => item.ativo))}
                       itemsPerPage={10}
                     />
                   </TabsContent>
@@ -448,14 +450,7 @@ const ColaboradoresPage = () => {
                   <TabsContent value="afastados" className="pt-4">
                     <DataTable
                       columns={colaboradoresColumns}
-                      data={filtrarColaboradores()
-                        .filter(item => !item.ativo)
-                        .map(col => ({
-                          ...col,
-                          colaborador: col,
-                          status: 'Afastado',
-                          proxAso: new Date(new Date().setDate(new Date().getDate() + Math.floor(Math.random() * 180))).toISOString().split('T')[0]
-                        }))}
+                      data={prepareColaboradoresData(filtrarColaboradores().filter(item => !item.ativo))}
                       itemsPerPage={10}
                     />
                   </TabsContent>
@@ -463,15 +458,7 @@ const ColaboradoresPage = () => {
                   <TabsContent value="ferias" className="pt-4">
                     <DataTable
                       columns={colaboradoresColumns}
-                      data={filtrarColaboradores()
-                        .filter(item => item.ativo)
-                        .slice(0, 2)
-                        .map(col => ({
-                          ...col,
-                          colaborador: col,
-                          status: 'Férias',
-                          proxAso: new Date(new Date().setDate(new Date().getDate() + Math.floor(Math.random() * 180))).toISOString().split('T')[0]
-                        }))}
+                      data={prepareColaboradoresData(filtrarColaboradores().filter(item => item.ativo).slice(0, 2))}
                       itemsPerPage={10}
                     />
                   </TabsContent>

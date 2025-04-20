@@ -21,7 +21,7 @@ import { ChevronLeft, ChevronRight, Search, SlidersHorizontal } from 'lucide-rea
 interface Column {
   header: string;
   accessorKey: string;
-  cell?: (value: any, row?: any) => React.ReactNode;
+  cell?: (value: any, row: any) => React.ReactNode;
 }
 
 interface DataTableProps {
