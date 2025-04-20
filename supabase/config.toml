@@ -1,0 +1,24 @@
+
+project_id = "yoezezhdzubxlzgrqkuz"
+
+[functions.gerar-termo-digital]
+verify_jwt = true
+
+[functions.notificar-vencimentos]
+verify_jwt = true
+
+[functions.exportar-relatorio]
+verify_jwt = true
+
+[functions.enviar-notificacao-externa]
+verify_jwt = true
+
+[functions.processar-biometria]
+verify_jwt = false
+
+[functions.verificar-qr-code]
+verify_jwt = false
+
+[functions.autenticacao]
+verify_jwt = false
+
