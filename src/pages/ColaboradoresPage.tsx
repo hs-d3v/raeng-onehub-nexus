@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,13 +8,56 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import DataTable from '@/components/ui/DataTable';
 import BarChart from '@/components/charts/BarChart';
-import { UserPlus, Search, Filter, Download, UserCheck, Clock, Calendar, Award, FileText } from 'lucide-react';
+import {
+  UserPlus, Search, Filter, Download, UserCheck, Clock, Calendar, Award, FileText,
+  AlertTriangle, Users
+} from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import BiometricTab from '@/components/colaboradores/BiometricTab';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import FichaTecnica from '@/components/colaboradores/FichaTecnica';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const ColaboradoresPage = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [openDialog, setOpenDialog] = useState(false);
+  const [colaboradores, setColaboradores] = useState<any[]>([]);
+  const [loadingColaboradores, setLoadingColaboradores] = useState(true);
+  const [filtroStatus, setFiltroStatus] = useState("todos");
+  const [filtroDepartamento, setFiltroDepartamento] = useState("todos");
+
+  useEffect(() => {
+    const fetchColaboradores = async () => {
+      try {
+        setLoadingColaboradores(true);
+        const { data, error } = await supabase
+          .from('colaboradores')
+          .select('*');
+
+        if (error) {
+          throw error;
+        }
+
+        setColaboradores(data || []);
+      } catch (error) {
+        console.error('Erro ao buscar colaboradores:', error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar a lista de colaboradores",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingColaboradores(false);
+      }
+    };
+
+    fetchColaboradores();
+  }, [toast]);
+  
   // Dados simulados para os gráficos
   const headcountPorAreaData = [
     { name: 'Jan', Operacional: 85, Administrativo: 32, Técnico: 48, Gestão: 15 },
@@ -45,24 +89,41 @@ const ColaboradoresPage = () => {
     { key: 'Faltas', name: 'Faltas', color: '#ea580c' },
     { key: 'Atrasos', name: 'Atrasos', color: '#7c3aed' },
   ];
-  
-  // Dados simulados para a tabela de colaboradores
+
+  const filtrarColaboradores = () => {
+    let filtrados = [...colaboradores];
+    
+    if (filtroStatus !== "todos") {
+      const statusValue = filtroStatus === "ativo";
+      filtrados = filtrados.filter(col => col.ativo === statusValue);
+    }
+    
+    if (filtroDepartamento !== "todos") {
+      filtrados = filtrados.filter(col => col.departamento === filtroDepartamento);
+    }
+    
+    return filtrados;
+  };
+
   const colaboradoresColumns = [
     { 
       header: 'Colaborador', 
       accessorKey: 'colaborador',
-      cell: ({ nome, foto, matricula }: { nome: string, foto: string, matricula: string }) => (
-        <div className="flex items-center gap-3">
-          <Avatar>
-            <AvatarImage src={foto} />
-            <AvatarFallback>{nome.substring(0, 2).toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="font-medium text-sm">{nome}</p>
-            <p className="text-xs text-gray-500">Matrícula: {matricula}</p>
+      cell: ({ row }: any) => {
+        const colaborador = row.original;
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar>
+              <AvatarImage src={colaborador.foto_url || "/placeholder.svg"} />
+              <AvatarFallback>{colaborador.nome?.substring(0, 2).toUpperCase() || 'CO'}</AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-medium text-sm">{colaborador.nome}</p>
+              <p className="text-xs text-gray-500">Matrícula: {colaborador.matricula}</p>
+            </div>
           </div>
-        </div>
-      )
+        );
+      }
     },
     { header: 'Cargo', accessorKey: 'cargo' },
     { 
@@ -89,7 +150,11 @@ const ColaboradoresPage = () => {
         return <Badge variant="outline" className={color}>{value}</Badge>;
       }
     },
-    { header: 'Admissão', accessorKey: 'admissao' },
+    { 
+      header: 'Admissão', 
+      accessorKey: 'data_admissao',
+      cell: (value: string) => value ? new Date(value).toLocaleDateString('pt-BR') : 'N/A'
+    },
     { 
       header: 'Status', 
       accessorKey: 'status',
@@ -114,109 +179,120 @@ const ColaboradoresPage = () => {
         return <Badge className={badgeClass}>{value}</Badge>;
       }
     },
-    { header: 'Próx. ASO', accessorKey: 'proxAso' },
+    { 
+      header: 'Próx. ASO', 
+      accessorKey: 'proxAso',
+      cell: (value: string) => {
+        if (!value) return 'N/A';
+        
+        const dataASO = new Date(value);
+        const hoje = new Date();
+        const diasDiferenca = Math.floor((dataASO.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (diasDiferenca < 0) {
+          return (
+            <div className="flex items-center">
+              <Badge className="bg-red-100 text-red-800">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                Vencido
+              </Badge>
+            </div>
+          );
+        } else if (diasDiferenca < 30) {
+          return (
+            <div className="flex items-center">
+              <Badge className="bg-yellow-100 text-yellow-800">
+                <Clock className="h-3 w-3 mr-1" />
+                {dataASO.toLocaleDateString('pt-BR')}
+              </Badge>
+            </div>
+          );
+        } else {
+          return dataASO.toLocaleDateString('pt-BR');
+        }
+      }
+    },
     { 
       header: 'Ações', 
       accessorKey: 'acoes',
-      cell: () => (
-        <div className="flex gap-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <UserCheck className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Calendar className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <FileText className="h-4 w-4" />
-          </Button>
-        </div>
-      )
-    },
-  ];
-  
-  const colaboradoresData = [
-    {
-      colaborador: { nome: 'João Silva', foto: '/placeholder.svg', matricula: '0001' },
-      cargo: 'Técnico de Segurança',
-      departamento: 'Técnico',
-      admissao: '15/03/2021',
-      status: 'Ativo',
-      proxAso: '12/08/2023'
-    },
-    {
-      colaborador: { nome: 'Maria Oliveira', foto: '/placeholder.svg', matricula: '0002' },
-      cargo: 'Engenheira Civil',
-      departamento: 'Técnico',
-      admissao: '22/01/2020',
-      status: 'Ativo',
-      proxAso: '05/09/2023'
-    },
-    {
-      colaborador: { nome: 'Carlos Santos', foto: '/placeholder.svg', matricula: '0003' },
-      cargo: 'Auxiliar Administrativo',
-      departamento: 'Administrativo',
-      admissao: '10/06/2022',
-      status: 'Férias',
-      proxAso: '18/11/2023'
-    },
-    {
-      colaborador: { nome: 'Ana Costa', foto: '/placeholder.svg', matricula: '0004' },
-      cargo: 'Gerente de Projetos',
-      departamento: 'Gestão',
-      admissao: '05/02/2019',
-      status: 'Ativo',
-      proxAso: '30/07/2023'
-    },
-    {
-      colaborador: { nome: 'Paulo Mendes', foto: '/placeholder.svg', matricula: '0005' },
-      cargo: 'Operador de Equipamentos',
-      departamento: 'Operacional',
-      admissao: '14/08/2021',
-      status: 'Afastado',
-      proxAso: '22/10/2023'
-    },
-    {
-      colaborador: { nome: 'Fernanda Lima', foto: '/placeholder.svg', matricula: '0006' },
-      cargo: 'Analista de RH',
-      departamento: 'Administrativo',
-      admissao: '03/04/2020',
-      status: 'Ativo',
-      proxAso: '09/09/2023'
-    },
-    {
-      colaborador: { nome: 'Roberto Alves', foto: '/placeholder.svg', matricula: '0007' },
-      cargo: 'Técnico Eletricista',
-      departamento: 'Técnico',
-      admissao: '20/09/2022',
-      status: 'Ativo',
-      proxAso: '15/12/2023'
-    },
-    {
-      colaborador: { nome: 'Juliana Pereira', foto: '/placeholder.svg', matricula: '0008' },
-      cargo: 'Coordenadora de Obras',
-      departamento: 'Gestão',
-      admissao: '11/05/2021',
-      status: 'Licença',
-      proxAso: '28/08/2023'
+      cell: ({ row }: any) => {
+        const colaborador = row.original;
+        return (
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-8"
+              onClick={() => navigate(`/colaboradores/${colaborador.id}`)}
+            >
+              Detalhes
+            </Button>
+          </div>
+        );
+      }
     },
   ];
   
   // Cards de indicadores
   const indicadoresRH = [
-    { title: 'Total de Colaboradores', value: '211', icon: UserCheck, iconColor: 'text-brand-blue', trend: { value: 5, positive: true } },
-    { title: 'Colaboradores Ativos', value: '187', icon: UserCheck, iconColor: 'text-brand-green', description: '24 afastados ou em férias' },
+    { title: 'Total de Colaboradores', value: colaboradores.length.toString(), icon: Users, iconColor: 'text-brand-blue', trend: { value: 5, positive: true } },
+    { title: 'Colaboradores Ativos', value: colaboradores.filter(c => c.ativo).length.toString(), icon: UserCheck, iconColor: 'text-brand-green', description: `${colaboradores.filter(c => !c.ativo).length} afastados ou em férias` },
     { title: 'Taxa de Absenteísmo', value: '4.2%', icon: Clock, iconColor: 'text-brand-orange', trend: { value: 0.8, positive: false } },
     { title: 'Treinamentos Pendentes', value: '8', icon: Award, iconColor: 'text-brand-purple', description: 'Próximos 30 dias' },
   ];
+
+  const handleSaveColaborador = () => {
+    setOpenDialog(false);
+    // Recarregar a lista de colaboradores após salvar
+    const fetchColaboradores = async () => {
+      try {
+        setLoadingColaboradores(true);
+        const { data, error } = await supabase
+          .from('colaboradores')
+          .select('*');
+
+        if (error) {
+          throw error;
+        }
+
+        setColaboradores(data || []);
+      } catch (error) {
+        console.error('Erro ao buscar colaboradores:', error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar a lista de colaboradores",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingColaboradores(false);
+      }
+    };
+
+    fetchColaboradores();
+    toast({
+      title: "Sucesso",
+      description: "Colaborador cadastrado com sucesso",
+    });
+  };
   
   return (
     <MainLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Colaboradores</h1>
-          <Button className="bg-brand-blue hover:bg-brand-blue/90">
-            <UserPlus className="mr-2 h-4 w-4" /> Novo Colaborador
-          </Button>
+          <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+            <DialogTrigger asChild>
+              <Button className="bg-brand-blue hover:bg-brand-blue/90">
+                <UserPlus className="mr-2 h-4 w-4" /> Novo Colaborador
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl">
+              <DialogHeader>
+                <DialogTitle>Cadastrar Novo Colaborador</DialogTitle>
+              </DialogHeader>
+              <FichaTecnica onSave={handleSaveColaborador} />
+            </DialogContent>
+          </Dialog>
         </div>
         
         {/* Cards de indicadores */}
@@ -309,57 +385,93 @@ const ColaboradoresPage = () => {
                         />
                       </div>
                     </div>
-                    <Select defaultValue="todos">
+                    <Select 
+                      value={filtroDepartamento} 
+                      onValueChange={setFiltroDepartamento}
+                    >
                       <SelectTrigger className="w-[180px] h-9">
                         <SelectValue placeholder="Departamento" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="todos">Todos</SelectItem>
-                        <SelectItem value="operacional">Operacional</SelectItem>
-                        <SelectItem value="administrativo">Administrativo</SelectItem>
-                        <SelectItem value="tecnico">Técnico</SelectItem>
-                        <SelectItem value="gestao">Gestão</SelectItem>
+                        <SelectItem value="Operacional">Operacional</SelectItem>
+                        <SelectItem value="Administrativo">Administrativo</SelectItem>
+                        <SelectItem value="Técnico">Técnico</SelectItem>
+                        <SelectItem value="Gestão">Gestão</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Select defaultValue="todos">
+                    <Select
+                      value={filtroStatus}
+                      onValueChange={setFiltroStatus}
+                    >
                       <SelectTrigger className="w-[180px] h-9">
                         <SelectValue placeholder="Status" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="todos">Todos</SelectItem>
                         <SelectItem value="ativo">Ativo</SelectItem>
-                        <SelectItem value="ferias">Férias</SelectItem>
-                        <SelectItem value="afastado">Afastado</SelectItem>
-                        <SelectItem value="licenca">Licença</SelectItem>
+                        <SelectItem value="inativo">Inativo</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   
-                  <TabsContent value="todos" className="pt-4">
-                    <DataTable
-                      columns={colaboradoresColumns}
-                      data={colaboradoresData}
-                      itemsPerPage={10}
-                    />
-                  </TabsContent>
+                  {loadingColaboradores ? (
+                    <div className="flex justify-center items-center h-32">
+                      <div className="animate-pulse">Carregando colaboradores...</div>
+                    </div>
+                  ) : (
+                    <TabsContent value="todos" className="pt-4">
+                      <DataTable
+                        columns={colaboradoresColumns}
+                        data={filtrarColaboradores().map(col => ({
+                          ...col,
+                          status: col.ativo ? 'Ativo' : 'Inativo',
+                          proxAso: new Date(new Date().setDate(new Date().getDate() + Math.floor(Math.random() * 180))).toISOString().split('T')[0]
+                        }))}
+                        itemsPerPage={10}
+                      />
+                    </TabsContent>
+                  )}
+
                   <TabsContent value="ativos" className="pt-4">
                     <DataTable
                       columns={colaboradoresColumns}
-                      data={colaboradoresData.filter(item => item.status === 'Ativo')}
+                      data={filtrarColaboradores()
+                        .filter(item => item.ativo)
+                        .map(col => ({
+                          ...col,
+                          status: 'Ativo',
+                          proxAso: new Date(new Date().setDate(new Date().getDate() + Math.floor(Math.random() * 180))).toISOString().split('T')[0]
+                        }))}
                       itemsPerPage={10}
                     />
                   </TabsContent>
+                  
                   <TabsContent value="afastados" className="pt-4">
                     <DataTable
                       columns={colaboradoresColumns}
-                      data={colaboradoresData.filter(item => item.status === 'Afastado' || item.status === 'Licença')}
+                      data={filtrarColaboradores()
+                        .filter(item => !item.ativo)
+                        .map(col => ({
+                          ...col,
+                          status: 'Afastado',
+                          proxAso: new Date(new Date().setDate(new Date().getDate() + Math.floor(Math.random() * 180))).toISOString().split('T')[0]
+                        }))}
                       itemsPerPage={10}
                     />
                   </TabsContent>
+                  
                   <TabsContent value="ferias" className="pt-4">
                     <DataTable
                       columns={colaboradoresColumns}
-                      data={colaboradoresData.filter(item => item.status === 'Férias')}
+                      data={filtrarColaboradores()
+                        .filter(item => item.ativo)
+                        .slice(0, 2)
+                        .map(col => ({
+                          ...col,
+                          status: 'Férias',
+                          proxAso: new Date(new Date().setDate(new Date().getDate() + Math.floor(Math.random() * 180))).toISOString().split('T')[0]
+                        }))}
                       itemsPerPage={10}
                     />
                   </TabsContent>
