@@ -1,8 +1,9 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { FileText, Download, Phone, Mail, Calendar, Clock, MessageCircle } from 'lucide-react';
+import { FileText, Download, Phone, Mail, Calendar, Clock, MessageCircle, Clipboard, BellRing, UserCog } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';

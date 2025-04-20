@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -52,7 +51,6 @@ const GestaoEPIs: React.FC<GestaoEPIsProps> = ({ colaboradorId }) => {
 
   useEffect(() => {
     if (colaboradorId) {
-      // Simular dados para exibição (em uma aplicação real, buscaríamos do banco)
       const epiAtivosData = [
         { 
           id: 'epi1',
@@ -116,7 +114,6 @@ const GestaoEPIs: React.FC<GestaoEPIsProps> = ({ colaboradorId }) => {
       
       setEPIHistorico(epiHistoricoData);
 
-      // Tipos de EPIs disponíveis para entrega
       const tiposEPIData = [
         { id: 'tipo1', nome: 'Capacete de Segurança', ca: '12345', estoque: 15 },
         { id: 'tipo2', nome: 'Luvas de Proteção', ca: '23456', estoque: 30 },
@@ -144,10 +141,6 @@ const GestaoEPIs: React.FC<GestaoEPIsProps> = ({ colaboradorId }) => {
       return;
     }
 
-    // Em uma implementação real, aqui você salvaria os dados no banco
-    // e atualizaria o estado da aplicação com os novos dados
-    
-    // Simulação de novo registro de EPI
     const novoEPI = {
       id: `epi${Date.now()}`,
       nome: epiSelecionado.nome,

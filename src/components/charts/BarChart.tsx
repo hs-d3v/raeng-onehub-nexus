@@ -18,23 +18,26 @@ interface DataPoint {
 }
 
 interface BarChartProps {
-  title: string;
+  title?: string;
   data: DataPoint[];
   dataKeys: {
     key: string;
     name: string;
     color: string;
   }[];
+  height?: number;
 }
 
-const BarChart: React.FC<BarChartProps> = ({ title, data, dataKeys }) => {
+const BarChart: React.FC<BarChartProps> = ({ title, data, dataKeys, height = 300 }) => {
   return (
     <Card className="card-hover">
-      <CardHeader className="pb-3">
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
+      {title && (
+        <CardHeader className="pb-3">
+          <CardTitle>{title}</CardTitle>
+        </CardHeader>
+      )}
       <CardContent>
-        <div className="h-80 w-full">
+        <div style={{ height: height }} className="w-full">
           <ResponsiveContainer width="100%" height="100%">
             <RechartsBarChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
