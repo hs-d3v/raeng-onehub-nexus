@@ -884,3 +884,21 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
+export interface Colaborador {
+  id: string;
+  nome: string;
+  matricula: string;
+  cargo?: string;
+  departamento?: string;
+  ativo: boolean;
+  data_admissao?: string;
+  data_demissao?: string;
+  email?: string;
+  telefone?: string;
+  foto_url?: string;
+  cracha_hash?: string;
+  empresa_id?: string;
+  created_at: string;
+  updated_at: string;
+}

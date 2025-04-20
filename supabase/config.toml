@@ -1,1 +1,23 @@
+
 project_id = "yoezezhdzubxlzgrqkuz"
+
+[functions.verificar-qr-code]
+verify_jwt = false
+
+[functions.processar-biometria]
+verify_jwt = false
+
+[functions.autenticacao]
+verify_jwt = false
+
+[functions.gerar-termo-digital]
+verify_jwt = true
+
+[functions.notificar-vencimentos]
+verify_jwt = true
+
+[functions.exportar-relatorio]
+verify_jwt = true
+
+[functions.enviar-notificacao-externa]
+verify_jwt = true
