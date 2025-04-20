@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -58,7 +57,6 @@ const ColaboradoresPage = () => {
     fetchColaboradores();
   }, [toast]);
   
-  // Dados simulados para os gráficos
   const headcountPorAreaData = [
     { name: 'Jan', Operacional: 85, Administrativo: 32, Técnico: 48, Gestão: 15 },
     { name: 'Fev', Operacional: 88, Administrativo: 34, Técnico: 47, Gestão: 15 },
@@ -109,8 +107,10 @@ const ColaboradoresPage = () => {
     { 
       header: 'Colaborador', 
       accessorKey: 'colaborador',
-      cell: ({ row }: any) => {
-        const colaborador = row.original;
+      cell: (value: any, row: any) => {
+        const colaborador = row?.original;
+        if (!colaborador) return null;
+        
         return (
           <div className="flex items-center gap-3">
             <Avatar>
@@ -215,8 +215,10 @@ const ColaboradoresPage = () => {
     { 
       header: 'Ações', 
       accessorKey: 'acoes',
-      cell: ({ row }: any) => {
-        const colaborador = row.original;
+      cell: (value: any, row: any) => {
+        const colaborador = row?.original;
+        if (!colaborador) return null;
+        
         return (
           <div className="flex gap-2">
             <Button 
@@ -233,7 +235,6 @@ const ColaboradoresPage = () => {
     },
   ];
   
-  // Cards de indicadores
   const indicadoresRH = [
     { title: 'Total de Colaboradores', value: colaboradores.length.toString(), icon: Users, iconColor: 'text-brand-blue', trend: { value: 5, positive: true } },
     { title: 'Colaboradores Ativos', value: colaboradores.filter(c => c.ativo).length.toString(), icon: UserCheck, iconColor: 'text-brand-green', description: `${colaboradores.filter(c => !c.ativo).length} afastados ou em férias` },
@@ -243,7 +244,6 @@ const ColaboradoresPage = () => {
 
   const handleSaveColaborador = () => {
     setOpenDialog(false);
-    // Recarregar a lista de colaboradores após salvar
     const fetchColaboradores = async () => {
       try {
         setLoadingColaboradores(true);
@@ -295,7 +295,6 @@ const ColaboradoresPage = () => {
           </Dialog>
         </div>
         
-        {/* Cards de indicadores */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {indicadoresRH.map((item, index) => (
             <Card key={index} className="card-hover">
@@ -329,7 +328,6 @@ const ColaboradoresPage = () => {
           ))}
         </div>
         
-        {/* Gráficos de RH */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <BarChart 
             title="Headcount por Área" 
@@ -343,14 +341,12 @@ const ColaboradoresPage = () => {
           />
         </div>
         
-        {/* Principais abas da página */}
         <Tabs defaultValue="gestao" className="w-full">
           <TabsList>
             <TabsTrigger value="gestao">Gestão</TabsTrigger>
             <TabsTrigger value="validacoes">Validações</TabsTrigger>
           </TabsList>
           
-          {/* Aba de Gestão de Colaboradores */}
           <TabsContent value="gestao">
             <Card>
               <CardHeader className="pb-3">
@@ -425,6 +421,7 @@ const ColaboradoresPage = () => {
                         columns={colaboradoresColumns}
                         data={filtrarColaboradores().map(col => ({
                           ...col,
+                          colaborador: col,
                           status: col.ativo ? 'Ativo' : 'Inativo',
                           proxAso: new Date(new Date().setDate(new Date().getDate() + Math.floor(Math.random() * 180))).toISOString().split('T')[0]
                         }))}
@@ -440,6 +437,7 @@ const ColaboradoresPage = () => {
                         .filter(item => item.ativo)
                         .map(col => ({
                           ...col,
+                          colaborador: col,
                           status: 'Ativo',
                           proxAso: new Date(new Date().setDate(new Date().getDate() + Math.floor(Math.random() * 180))).toISOString().split('T')[0]
                         }))}
@@ -454,6 +452,7 @@ const ColaboradoresPage = () => {
                         .filter(item => !item.ativo)
                         .map(col => ({
                           ...col,
+                          colaborador: col,
                           status: 'Afastado',
                           proxAso: new Date(new Date().setDate(new Date().getDate() + Math.floor(Math.random() * 180))).toISOString().split('T')[0]
                         }))}
@@ -469,6 +468,7 @@ const ColaboradoresPage = () => {
                         .slice(0, 2)
                         .map(col => ({
                           ...col,
+                          colaborador: col,
                           status: 'Férias',
                           proxAso: new Date(new Date().setDate(new Date().getDate() + Math.floor(Math.random() * 180))).toISOString().split('T')[0]
                         }))}
@@ -480,7 +480,6 @@ const ColaboradoresPage = () => {
             </Card>
           </TabsContent>
           
-          {/* Aba de Validações Biométricas */}
           <TabsContent value="validacoes">
             <BiometricTab />
           </TabsContent>

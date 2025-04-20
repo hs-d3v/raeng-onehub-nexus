@@ -21,7 +21,7 @@ import { ChevronLeft, ChevronRight, Search, SlidersHorizontal } from 'lucide-rea
 interface Column {
   header: string;
   accessorKey: string;
-  cell?: (value: any) => React.ReactNode;
+  cell?: (value: any, row?: any) => React.ReactNode;
 }
 
 interface DataTableProps {
@@ -126,7 +126,7 @@ const DataTable: React.FC<DataTableProps> = ({
                   {columns.map((column) => (
                     <TableCell key={column.accessorKey}>
                       {column.cell 
-                        ? column.cell(row[column.accessorKey]) 
+                        ? column.cell(row[column.accessorKey], { original: row }) 
                         : row[column.accessorKey]}
                     </TableCell>
                   ))}
