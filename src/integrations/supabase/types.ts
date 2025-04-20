@@ -23,6 +23,7 @@ export type Database = {
           foto_url: string | null
           id: string
           matricula: string
+          meta_data: Json | null
           nome: string
           telefone: string | null
           updated_at: string | null
@@ -40,6 +41,7 @@ export type Database = {
           foto_url?: string | null
           id?: string
           matricula: string
+          meta_data?: Json | null
           nome: string
           telefone?: string | null
           updated_at?: string | null
@@ -57,6 +59,7 @@ export type Database = {
           foto_url?: string | null
           id?: string
           matricula?: string
+          meta_data?: Json | null
           nome?: string
           telefone?: string | null
           updated_at?: string | null
