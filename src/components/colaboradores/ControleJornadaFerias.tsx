@@ -79,7 +79,7 @@ const ControleJornadaFerias: React.FC<ControleJornadaFeriasProps> = ({ colaborad
             saida_almoco: horaSaidaAlmoco,
             retorno_almoco: horaRetornoAlmoco,
             saida: horaSaida,
-            total_horas: 8.0 - (Math.random() * 1).toFixed(1),
+            total_horas: 8.0 - (Math.random() * 1),
             status: 'atraso',
             justificativa: 'Atraso na entrada'
           };
@@ -91,7 +91,7 @@ const ControleJornadaFerias: React.FC<ControleJornadaFeriasProps> = ({ colaborad
             saida_almoco: horaSaidaAlmoco,
             retorno_almoco: horaRetornoAlmoco,
             saida: `1${Math.floor(Math.random() * 2) + 6}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
-            total_horas: 8.0 - (Math.random() * 1).toFixed(1),
+            total_horas: 8.0 - (Math.random() * 1),
             status: 'saida_antecipada',
             justificativa: 'Saída antecipada'
           };
@@ -104,7 +104,7 @@ const ControleJornadaFerias: React.FC<ControleJornadaFeriasProps> = ({ colaborad
             saida_almoco: horaSaidaAlmoco,
             retorno_almoco: horaRetornoAlmoco,
             saida: horaSaida,
-            total_horas: total.toFixed(1),
+            total_horas: total,
             status: total > 8.0 ? 'hora_extra' : 'regular',
             justificativa: total > 8.0 ? 'Hora extra' : ''
           };

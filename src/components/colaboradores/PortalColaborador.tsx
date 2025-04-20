@@ -1,11 +1,10 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { FileText, Download, UserCog, Calendar, Clipboard, BellRing, Envelope, Phone } from 'lucide-react';
+import { FileText, Download, Phone, Mail, Calendar, Clock, MessageCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 
 interface PortalColaboradorProps {
@@ -89,7 +88,7 @@ const PortalColaborador: React.FC<PortalColaboradorProps> = ({ colaborador = {} 
                         <span>(11) 1234-5678</span>
                       </div>
                       <div className="flex items-center">
-                        <Envelope className="h-4 w-4 mr-2 text-gray-500" />
+                        <Mail className="h-4 w-4 mr-2 text-gray-500" />
                         <span>rh@raeng.com.br</span>
                       </div>
                     </div>

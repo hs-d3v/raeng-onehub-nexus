@@ -43,6 +43,42 @@ const formSchema = z.object({
 
 type ColaboradorFormValues = z.infer<typeof formSchema>;
 
+// Interface para tipar corretamente os dados do colaborador
+interface ColaboradorData {
+  id: string;
+  nome: string;
+  matricula: string;
+  cargo: string;
+  departamento: string;
+  ativo: boolean;
+  data_admissao: string | null;
+  data_demissao: string | null;
+  email: string | null;
+  telefone: string | null;
+  foto_url: string | null;
+  cracha_hash: string | null;
+  empresa_id: string | null;
+  created_at: string;
+  updated_at: string;
+  meta_data?: {
+    cpf?: string;
+    rg?: string;
+    data_nascimento?: string;
+    genero?: string;
+    estado_civil?: string;
+    celular?: string;
+    email_pessoal?: string;
+    endereco?: string;
+    cidade?: string;
+    estado?: string;
+    cep?: string;
+    salario?: string;
+    contato_emergencia?: string;
+    telefone_emergencia?: string;
+    observacoes?: string;
+  };
+}
+
 interface FichaTecnicaProps {
   colaboradorId?: string;
   onSave?: () => void;
@@ -103,30 +139,31 @@ const FichaTecnica: React.FC<FichaTecnicaProps> = ({
         }
 
         if (data) {
+          const colaborador = data as ColaboradorData;
           // Mapear dados do banco para o formulário
           form.reset({
-            nome: data.nome || '',
-            matricula: data.matricula || '',
-            cpf: data.meta_data?.cpf || '',
-            rg: data.meta_data?.rg || '',
-            data_nascimento: data.meta_data?.data_nascimento || '',
-            genero: data.meta_data?.genero || '',
-            estado_civil: data.meta_data?.estado_civil || '',
-            telefone: data.telefone || '',
-            celular: data.meta_data?.celular || '',
-            email_pessoal: data.meta_data?.email_pessoal || '',
-            email: data.email || '',
-            endereco: data.meta_data?.endereco || '',
-            cidade: data.meta_data?.cidade || '',
-            estado: data.meta_data?.estado || '',
-            cep: data.meta_data?.cep || '',
-            data_admissao: data.data_admissao ? new Date(data.data_admissao).toISOString().split('T')[0] : '',
-            cargo: data.cargo || '',
-            departamento: data.departamento || '',
-            salario: data.meta_data?.salario || '',
-            contato_emergencia: data.meta_data?.contato_emergencia || '',
-            telefone_emergencia: data.meta_data?.telefone_emergencia || '',
-            observacoes: data.meta_data?.observacoes || '',
+            nome: colaborador.nome || '',
+            matricula: colaborador.matricula || '',
+            cpf: colaborador.meta_data?.cpf || '',
+            rg: colaborador.meta_data?.rg || '',
+            data_nascimento: colaborador.meta_data?.data_nascimento || '',
+            genero: colaborador.meta_data?.genero || '',
+            estado_civil: colaborador.meta_data?.estado_civil || '',
+            telefone: colaborador.telefone || '',
+            celular: colaborador.meta_data?.celular || '',
+            email_pessoal: colaborador.meta_data?.email_pessoal || '',
+            email: colaborador.email || '',
+            endereco: colaborador.meta_data?.endereco || '',
+            cidade: colaborador.meta_data?.cidade || '',
+            estado: colaborador.meta_data?.estado || '',
+            cep: colaborador.meta_data?.cep || '',
+            data_admissao: colaborador.data_admissao ? new Date(colaborador.data_admissao).toISOString().split('T')[0] : '',
+            cargo: colaborador.cargo || '',
+            departamento: colaborador.departamento || '',
+            salario: colaborador.meta_data?.salario || '',
+            contato_emergencia: colaborador.meta_data?.contato_emergencia || '',
+            telefone_emergencia: colaborador.meta_data?.telefone_emergencia || '',
+            observacoes: colaborador.meta_data?.observacoes || '',
           });
         }
       }
