@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,7 @@ const formSchema = z.object({
   epi_id: z.string({
     required_error: "Selecione um EPI",
   }),
-  quantidade: z.string().transform(val => parseInt(val, 10)),
+  quantidade: z.string().transform(val => parseInt(val, 10)), // Transform string to number
   data_entrega: z.string({
     required_error: "Data de entrega obrigatória",
   }),
@@ -43,7 +44,7 @@ const GestaoEPIs: React.FC<GestaoEPIsProps> = ({ colaboradorId }) => {
   const form = useForm<EntregaEPIFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      quantidade: "1",
+      quantidade: "1", // Keep as string for input, will be transformed
       data_entrega: new Date().toISOString().substring(0, 10),
       observacao: "",
     },
