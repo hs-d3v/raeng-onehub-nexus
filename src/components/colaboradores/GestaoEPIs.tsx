@@ -23,7 +23,7 @@ const formSchema = z.object({
   epi_id: z.string({
     required_error: "Selecione um EPI",
   }),
-  quantidade: z.string().transform(val => parseInt(val, 10)), // Transform string to number
+  quantidade: z.number().min(1, { message: "Quantidade deve ser maior que zero" }),
   data_entrega: z.string({
     required_error: "Data de entrega obrigatória",
   }),
@@ -44,7 +44,7 @@ const GestaoEPIs: React.FC<GestaoEPIsProps> = ({ colaboradorId }) => {
   const form = useForm<EntregaEPIFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      quantidade: "1", // Keep as string for input, will be transformed
+      quantidade: 1, // Now a number instead of a string
       data_entrega: new Date().toISOString().substring(0, 10),
       observacao: "",
     },
