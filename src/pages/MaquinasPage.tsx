@@ -1,11 +1,10 @@
-
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import DataTable from '@/components/ui/DataTable';
+import DataTable, { Column } from '@/components/ui/DataTable';
 import StatsCard from '@/components/widgets/StatsCard';
 import { Plus, Search, Filter, Download, Truck, Wrench, CreditCard, Fuel, Calendar, FileText, BarChart2, MapPin, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -22,28 +21,32 @@ const MaquinasPage = () => {
   ];
   
   // Dados simulados para a tabela de máquinas
-  const maquinasColumns = [
+  const maquinasColumns: Column[] = [
     { 
       header: 'Máquina', 
       accessorKey: 'maquina',
-      cell: ({ nome, modelo, codigo }: { nome: string, modelo: string, codigo: string }) => (
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-gray-100 rounded-md flex items-center justify-center">
-            <Truck className="h-6 w-6 text-gray-600" />
+      cell: ({ row }) => {
+        const { nome, modelo, codigo } = row.original.maquina;
+        return (
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 bg-gray-100 rounded-md flex items-center justify-center">
+              <Truck className="h-6 w-6 text-gray-600" />
+            </div>
+            <div>
+              <p className="font-medium text-sm">{nome}</p>
+              <p className="text-xs text-gray-500">Modelo: {modelo} | Cód: {codigo}</p>
+            </div>
           </div>
-          <div>
-            <p className="font-medium text-sm">{nome}</p>
-            <p className="text-xs text-gray-500">Modelo: {modelo} | Cód: {codigo}</p>
-          </div>
-        </div>
-      )
+        );
+      }
     },
     { header: 'Categoria', accessorKey: 'categoria' },
     { header: 'Horímetro', accessorKey: 'horimetro' },
     { 
       header: 'Status', 
       accessorKey: 'status',
-      cell: (value: string) => {
+      cell: ({ row }) => {
+        const value = row.original.status;
         let badgeClass = "";
         switch(value) {
           case 'Operacional':
@@ -69,7 +72,8 @@ const MaquinasPage = () => {
     { 
       header: 'Próx. Manutenção', 
       accessorKey: 'proximaManutencao',
-      cell: ({ data, proximidade }: { data: string, proximidade: number }) => {
+      cell: ({ row }) => {
+        const { data, proximidade } = row.original.proximaManutencao;
         let barColor = "bg-green-500";
         if (proximidade <= 30) {
           barColor = "bg-red-500";

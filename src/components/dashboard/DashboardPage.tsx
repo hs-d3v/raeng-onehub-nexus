@@ -88,7 +88,7 @@ const DashboardPage = () => {
     }
   ];
   
-  const alertasColumns = [
+  const alertasColumns: Column[] = [
     { 
       header: 'Tipo', 
       accessorKey: 'tipo',
