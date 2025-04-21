@@ -26,3 +26,36 @@ export interface TableItemBase {
   updated_at?: string;
   empresa_id?: string;
 }
+
+// Adding missing interfaces for item tables
+export interface EPIItem extends TableItemBase {
+  ca_numero?: string;
+  validade_dias?: number;
+  estoque_atual?: number;
+  estoque_minimo?: number;
+  foto_url?: string;
+}
+
+export interface FerramentaItem extends TableItemBase {
+  status?: string;
+  foto_url?: string;
+  ultima_manutencao?: string;
+  proxima_manutencao?: string;
+}
+
+export interface MaquinaItem extends TableItemBase {
+  status?: string;
+  foto_url?: string;
+  valor_aquisicao?: number;
+  data_aquisicao?: string;
+  ultima_manutencao?: string;
+  proxima_manutencao?: string;
+}
+
+export interface InsumoItem extends TableItemBase {
+  unidade?: string;
+  estoque_atual?: number;
+  estoque_minimo?: number;
+  valor_unitario?: number;
+  foto_url?: string;
+}

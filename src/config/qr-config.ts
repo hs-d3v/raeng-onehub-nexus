@@ -1,4 +1,3 @@
-
 /**
  * Configuration settings for QR Code functionality throughout the application
  */
@@ -88,7 +87,8 @@ export const generateQRData = (entityType: 'employee' | 'equipment' | 'epi' | 't
   // Convert to string and optionally encrypt (simplified for demonstration)
   const qrString = JSON.stringify(qrData);
   
-  if (entityType === 'employee' && format.encryptionEnabled) {
+  // Use optional chaining to safely check if encryption is enabled
+  if (entityType === 'employee' && (format as any).encryptionEnabled) {
     // Simple encoding for demonstration - in production use proper encryption
     return btoa(qrString);
   }

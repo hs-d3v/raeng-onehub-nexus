@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,11 +6,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { QRCodeSVG } from 'qrcode.react'; // Fixed import
+import { QRCodeSVG } from 'qrcode.react';
 import { generateQRData, QR_CONFIG } from '@/config/qr-config';
 import { motion } from 'framer-motion';
 import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf'; // Fixed import
+import { jsPDF } from 'jspdf';
 
 interface CrachaInteligenteProps {
   colaborador?: any;
@@ -25,7 +24,6 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
   const [isDownloading, setIsDownloading] = useState(false);
   const crachaRef = React.useRef<HTMLDivElement>(null);
 
-  // Check if QR code exists when component loads
   useEffect(() => {
     if (colaborador?.id && colaborador?.cracha_hash) {
       setQrGerado(true);
@@ -46,7 +44,6 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
     setLoading(true);
 
     try {
-      // Generate unique QR data for the employee
       const timestamp = Date.now();
       const randomSuffix = Math.random().toString(36).substring(2, 8);
       const qrHashBase = generateQRData('employee', colaborador.id, {
@@ -56,7 +53,6 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
         random: randomSuffix
       });
 
-      // Save the QR hash to the database
       const { data, error } = await supabase
         .from('colaboradores')
         .update({ cracha_hash: qrHashBase })
@@ -90,28 +86,23 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
 
     setIsDownloading(true);
     try {
-      // Add a class to prepare for download (can apply specific styles)
       crachaRef.current.classList.add('downloading');
       
-      // Capture the badge image with html2canvas
       const canvas = await html2canvas(crachaRef.current, {
-        scale: 2, // Higher resolution
-        useCORS: true, // Allow cross-origin images
+        scale: 2,
+        useCORS: true,
         allowTaint: true,
       });
       
-      // Remove download class
       crachaRef.current.classList.remove('downloading');
       
-      // Calculate dimensions for PDF
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: [85, 130], // Standard ID card size (adjust as needed)
+        format: [85, 130],
       });
       
-      // Add image to PDF - calculate sizing to fit properly
       const imgWidth = 70;
       const imgHeight = 110;
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -121,7 +112,6 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
       
       pdf.addImage(imgData, 'PNG', marginX, marginY, imgWidth, imgHeight);
       
-      // Save the PDF with the employee name
       const fileName = `cracha_${colaborador.nome?.replace(/\s+/g, '_').toLowerCase() || 'colaborador'}.pdf`;
       pdf.save(fileName);
       
@@ -154,7 +144,6 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
       return;
     }
     
-    // Prepare print document
     printWindow.document.write(`
       <html>
         <head>
@@ -189,19 +178,16 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Visualização do crachá */}
           <div className="flex flex-col items-center">
             <div 
               ref={crachaRef} 
               className="relative w-full max-w-[250px] bg-white border rounded-lg overflow-hidden shadow-lg"
             >
-              {/* Cabeçalho do crachá */}
               <div className="bg-gradient-to-r from-brand-blue to-brand-blue-dark p-3 text-white text-center">
                 <h3 className="text-lg font-bold">RAENG</h3>
                 <p className="text-xs">CONSTRUÇÃO E ENGENHARIA</p>
               </div>
               
-              {/* Corpo do crachá */}
               <div className="p-4 flex flex-col items-center">
                 <Avatar className="w-24 h-24 border-2 border-brand-blue">
                   <AvatarImage src={colaborador.foto_url || "/placeholder.svg"} />
@@ -226,14 +212,13 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
                         transition={{ type: "spring", stiffness: 260, damping: 20 }}
                         className="relative"
                       >
-                        <QRCode 
+                        <QRCodeSVG 
                           value={qrData} 
                           size={120} 
                           level={QR_CONFIG.generation.errorCorrectionLevel}
-                          renderAs="svg"
-                          includeMargin={true}
                           bgColor={QR_CONFIG.generation.color.light}
                           fgColor={QR_CONFIG.generation.color.dark}
+                          includeMargin={true}
                         />
                         <motion.div 
                           className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1"
@@ -258,7 +243,6 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
                 </div>
               </div>
               
-              {/* Rodapé do crachá */}
               <div className="bg-gray-100 p-2 text-center text-xs text-gray-600">
                 <p>Em caso de perda, favor devolver.</p>
                 <p>Tel: (11) 1234-5678</p>
@@ -310,7 +294,6 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
             </div>
           </div>
           
-          {/* Controles e informações */}
           <div className="space-y-6">
             <div className="bg-blue-50 border border-blue-100 rounded-md p-4">
               <h3 className="font-medium text-brand-blue mb-2">Sobre o Crachá Inteligente</h3>

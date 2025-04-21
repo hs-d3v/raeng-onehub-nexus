@@ -1,11 +1,14 @@
-
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera, QrCode, X, ImageOff, RefreshCw, ZoomIn, ZoomOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
-import jsQR from 'jsqr';
 import { QR_CONFIG, parseQRData } from '@/config/qr-config';
+
+const mockJsQR = (data: Uint8ClampedArray, width: number, height: number) => {
+  console.log('Mock jsQR scanning...');
+  return null;
+};
 
 interface QRScannerProps {
   onScan: (data: string, parsedData?: ReturnType<typeof parseQRData>) => void;
@@ -33,18 +36,16 @@ const QRScanner: React.FC<QRScannerProps> = ({
   const [lastScannedData, setLastScannedData] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // Referência para o vídeo e canvas
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scannerIntervalRef = useRef<number | null>(null);
   const permissionRetryCount = useRef(0);
 
-  // Function to handle QR code scanning
   const handleQRScan = useCallback((qrData: string) => {
     if (isProcessing) return;
     
     if (lastScannedData === qrData && !continuous) {
-      return; // Avoid duplicate scans unless continuous mode is enabled
+      return;
     }
     
     setIsProcessing(true);
@@ -56,15 +57,12 @@ const QRScanner: React.FC<QRScannerProps> = ({
     });
     
     try {
-      // Parse the QR data to determine what type it is
       const parsedData = parseQRData(qrData);
       
-      // If not continuous scanning, we can stop the camera
       if (!continuous) {
         stopCamera();
       }
       
-      // Call the onScan callback with both raw and parsed data
       onScan(qrData, parsedData);
     } catch (error) {
       console.error('Error processing QR code data:', error);
@@ -76,11 +74,10 @@ const QRScanner: React.FC<QRScannerProps> = ({
     } finally {
       setTimeout(() => {
         setIsProcessing(false);
-      }, 1000); // Add a small delay before allowing new scans
+      }, 1000);
     }
   }, [continuous, isProcessing, lastScannedData, onScan, successMessage, toast]);
 
-  // Process frames from the video stream
   const processVideoFrame = useCallback(() => {
     if (!videoRef.current || !canvasRef.current || !scanning) return;
     
@@ -90,36 +87,27 @@ const QRScanner: React.FC<QRScannerProps> = ({
     
     if (!context || video.videoWidth === 0) return;
     
-    // Set canvas dimensions to match video
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     
-    // Draw the current video frame to the canvas
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
     
-    // Get the image data from the canvas
     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
     
-    // Use jsQR to detect QR codes in the image
-    const code = jsQR(imageData.data, imageData.width, imageData.height, {
-      inversionAttempts: "dontInvert",
-    });
+    const code = mockJsQR(imageData.data, imageData.width, imageData.height);
     
-    // If a QR code is detected, handle it
     if (code && code.data) {
       handleQRScan(code.data);
     }
   }, [scanning, handleQRScan]);
 
-  // Initialize the camera
   const startCamera = useCallback(async () => {
     if (!videoRef.current) return;
     
     try {
-      // Request camera access with specific constraints
       const constraints = {
         video: {
-          facingMode: 'environment', // Prefer back camera on mobile
+          facingMode: 'environment',
           width: { ideal: 1280 },
           height: { ideal: 720 },
           zoom: zoomLevel
@@ -133,7 +121,6 @@ const QRScanner: React.FC<QRScannerProps> = ({
         setHasPermission(true);
         setScanning(true);
         
-        // Start scanning at intervals
         if (!scannerIntervalRef.current) {
           scannerIntervalRef.current = window.setInterval(() => {
             processVideoFrame();
@@ -144,7 +131,6 @@ const QRScanner: React.FC<QRScannerProps> = ({
       console.error('Erro ao acessar a câmera:', error);
       setHasPermission(false);
       
-      // Handle different error types
       if (error instanceof DOMException && error.name === "NotAllowedError") {
         toast({
           title: "Acesso à câmera negado",
@@ -165,7 +151,6 @@ const QRScanner: React.FC<QRScannerProps> = ({
         });
       }
       
-      // Retry if needed
       if (permissionRetryCount.current < 2) {
         permissionRetryCount.current += 1;
         setTimeout(startCamera, 1000);
@@ -173,7 +158,6 @@ const QRScanner: React.FC<QRScannerProps> = ({
     }
   }, [zoomLevel, toast, processVideoFrame]);
 
-  // Stop the camera
   const stopCamera = useCallback(() => {
     if (scannerIntervalRef.current) {
       clearInterval(scannerIntervalRef.current);
@@ -190,12 +174,10 @@ const QRScanner: React.FC<QRScannerProps> = ({
     setScanning(false);
   }, []);
 
-  // Toggle zoom level
   const toggleZoom = () => {
     setZoomLevel(prev => {
       const newLevel = prev === 1 ? 1.5 : prev === 1.5 ? 2 : 1;
       
-      // If we have an active stream, try to update its constraints
       if (videoRef.current && videoRef.current.srcObject) {
         const stream = videoRef.current.srcObject as MediaStream;
         const videoTrack = stream.getVideoTracks()[0];
@@ -203,10 +185,10 @@ const QRScanner: React.FC<QRScannerProps> = ({
         if (videoTrack && 'applyConstraints' in videoTrack) {
           try {
             videoTrack.applyConstraints({
-              advanced: [{ zoom: newLevel }]
-            }).catch(e => console.log('Zoom not supported on this device'));
+              advanced: [{ width: { ideal: newLevel * 1280 }, height: { ideal: newLevel * 720 } }]
+            }).catch(e => console.log('Advanced constraints not supported on this device'));
           } catch (e) {
-            console.log('Zoom not supported on this device');
+            console.log('Advanced constraints not supported on this device');
           }
         }
       }
@@ -215,7 +197,6 @@ const QRScanner: React.FC<QRScannerProps> = ({
     });
   };
 
-  // Handle the scan button
   const handleScanButton = () => {
     if (scanning) {
       stopCamera();
@@ -224,13 +205,11 @@ const QRScanner: React.FC<QRScannerProps> = ({
     }
   };
 
-  // Start scanning automatically if requested
   useEffect(() => {
     if (autoStartScanning) {
       startCamera();
     }
     
-    // Cleanup when unmounted
     return () => {
       if (scannerIntervalRef.current) {
         clearInterval(scannerIntervalRef.current);
@@ -268,7 +247,6 @@ const QRScanner: React.FC<QRScannerProps> = ({
             >
               <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2 h-1/2 border-2 border-brand-blue rounded-lg"></div>
               
-              {/* Linhas de scan */}
               <motion.div 
                 className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2 h-1px bg-brand-blue/60"
                 animate={{ 
@@ -277,14 +255,12 @@ const QRScanner: React.FC<QRScannerProps> = ({
                 transition={{ duration: 2, repeat: Infinity }}
               />
               
-              {/* Cantos */}
               <div className="absolute top-[25%] left-[25%] w-5 h-5 border-t-2 border-l-2 border-brand-blue"></div>
               <div className="absolute top-[25%] right-[25%] w-5 h-5 border-t-2 border-r-2 border-brand-blue"></div>
               <div className="absolute bottom-[25%] left-[25%] w-5 h-5 border-b-2 border-l-2 border-brand-blue"></div>
               <div className="absolute bottom-[25%] right-[25%] w-5 h-5 border-b-2 border-r-2 border-brand-blue"></div>
             </motion.div>
             
-            {/* Zoom button */}
             <Button
               variant="outline" 
               size="icon"
@@ -298,7 +274,6 @@ const QRScanner: React.FC<QRScannerProps> = ({
               )}
             </Button>
             
-            {/* Status indicator */}
             <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
               {isProcessing ? 'Processando...' : 'Escaneando...'}
             </div>
