@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -10,7 +9,7 @@ import DataTable from '@/components/ui/DataTable';
 import BarChart from '@/components/charts/BarChart';
 import {
   UserPlus, Search, Filter, Download, UserCheck, Clock, Calendar, Award, FileText,
-  AlertTriangle, Users
+  AlertTriangle, Users, MoreVertical, Edit, Trash2 // Usado para o botão de menu de ações
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +19,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import FichaTecnica from '@/components/colaboradores/FichaTecnica';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem
+} from '@/components/ui/context-menu';
 
 const ColaboradoresPage = () => {
   const navigate = useNavigate();
@@ -102,6 +107,32 @@ const ColaboradoresPage = () => {
     }
     
     return filtrados;
+  };
+
+  const [idExcluindo, setIdExcluindo] = useState<string | null>(null);
+
+  // Função para excluir colaborador
+  const handleExcluirColaborador = async (colaboradorId: string) => {
+    if (!window.confirm("Confirma a exclusão deste colaborador?")) return;
+    try {
+      setIdExcluindo(colaboradorId);
+      const { error } = await supabase.from('colaboradores').delete().eq('id', colaboradorId);
+      if (error) throw error;
+      setColaboradores(prev => prev.filter(col => col.id !== colaboradorId));
+      toast({
+        title: "Colaborador excluído",
+        description: "O colaborador foi removido com sucesso.",
+        variant: "default",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao excluir",
+        description: "Não foi possível excluir este colaborador.",
+        variant: "destructive",
+      });
+    } finally {
+      setIdExcluindo(null);
+    }
   };
 
   const colaboradoresColumns = [
@@ -222,19 +253,43 @@ const ColaboradoresPage = () => {
       accessorKey: 'acoes',
       cell: (value: any, row: any) => {
         if (!row || !row.original) return null;
-        
         const colaborador = row.original;
         return (
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="h-8"
-              onClick={() => navigate(`/colaboradores/${colaborador.id}`)}
-            >
-              Detalhes
-            </Button>
-          </div>
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="h-8 w-8 p-0 flex justify-center items-center">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </ContextMenuTrigger>
+            <ContextMenuContent align="end" className="w-40">
+              <ContextMenuItem
+                onClick={() => navigate(`/colaboradores/${colaborador.id}`)}
+              >
+                <span className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" /> Detalhes
+                </span>
+              </ContextMenuItem>
+              <ContextMenuItem
+                onClick={() => {
+                  // Para futura implementação de edição, redireciona para a página de edição (placeholder)
+                  navigate(`/colaboradores/${colaborador.id}/editar`);
+                }}
+              >
+                <span className="flex items-center gap-2">
+                  <Edit className="h-4 w-4" /> Editar
+                </span>
+              </ContextMenuItem>
+              <ContextMenuItem
+                className="text-red-600 focus:bg-red-50"
+                onClick={() => handleExcluirColaborador(colaborador.id)}
+                disabled={idExcluindo === colaborador.id}
+              >
+                <span className="flex items-center gap-2">
+                  <Trash2 className="h-4 w-4" /> {idExcluindo === colaborador.id ? "Excluindo..." : "Excluir"}
+                </span>
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
         );
       }
     },
