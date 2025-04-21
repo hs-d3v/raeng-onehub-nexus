@@ -1,288 +1,331 @@
-
 import React, { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
+import DataTable, { Column } from '@/components/ui/DataTable';
+import {
+  FileText, Search, Filter, Download, PlusCircle, MoreVertical
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import DataTable from '@/components/ui/DataTable';
-import BarChart from '@/components/charts/BarChart';
-import { AlertTriangle, FileText, Search, Plus, Filter, FileSpreadsheet, Printer, Download } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { useToast } from '@/hooks/use-toast';
+import { safeFormatDate } from '@/utils/dateUtils';
+
+interface Contrato {
+  id: string;
+  numero: string;
+  cliente: string;
+  descricao: string;
+  dataInicio: string;
+  dataTermino: string;
+  status: string;
+}
+
+interface Aditivo {
+  id: string;
+  numero: string;
+  contrato: string;
+  descricao: string;
+  data: string;
+  valor: string;
+  status: string;
+}
 
 const ContratosPage = () => {
-  const [activeTab, setActiveTab] = useState('todos');
-  
-  // Dados simulados para os gráficos
-  const contratosPorTipoData = [
-    { name: 'Jan', SPCI: 22, SPDA: 18, Construção: 12, Outros: 8 },
-    { name: 'Fev', SPCI: 24, SPDA: 16, Construção: 14, Outros: 10 },
-    { name: 'Mar', SPCI: 20, SPDA: 17, Construção: 16, Outros: 9 },
-    { name: 'Abr', SPCI: 25, SPDA: 19, Construção: 15, Outros: 11 },
-    { name: 'Mai', SPCI: 27, SPDA: 21, Construção: 18, Outros: 8 },
-    { name: 'Jun', SPCI: 30, SPDA: 24, Construção: 20, Outros: 12 },
+  const { toast } = useToast();
+  const [search, setSearch] = useState('');
+  const [filtroStatus, setFiltroStatus] = useState("todos");
+  const [date, setDate] = useState<Date>();
+
+  const contratosData: Contrato[] = [
+    {
+      id: '1',
+      numero: '2023-001',
+      cliente: 'Empresa A',
+      descricao: 'Fornecimento de materiais de escritório',
+      dataInicio: '2023-01-15',
+      dataTermino: '2023-12-31',
+      status: 'ativo',
+    },
+    {
+      id: '2',
+      numero: '2023-002',
+      cliente: 'Empresa B',
+      descricao: 'Serviços de consultoria em TI',
+      dataInicio: '2023-03-01',
+      dataTermino: '2023-06-30',
+      status: 'finalizado',
+    },
+    {
+      id: '3',
+      numero: '2023-003',
+      cliente: 'Empresa C',
+      descricao: 'Manutenção predial',
+      dataInicio: '2023-05-10',
+      dataTermino: '2023-11-15',
+      status: 'pendente',
+    },
+    {
+      id: '4',
+      numero: '2023-004',
+      cliente: 'Empresa D',
+      descricao: 'Serviços de limpeza',
+      dataInicio: '2023-02-20',
+      dataTermino: '2023-12-20',
+      status: 'ativo',
+    },
   ];
-  
-  const contratosPorTipoKeys = [
-    { key: 'SPCI', name: 'SPCI', color: '#2563eb' },
-    { key: 'SPDA', name: 'SPDA', color: '#16a34a' },
-    { key: 'Construção', name: 'Construção', color: '#ea580c' },
-    { key: 'Outros', name: 'Outros', color: '#7c3aed' },
+
+  const aditivosData: Aditivo[] = [
+    {
+      id: '101',
+      numero: '2023-A01',
+      contrato: '2023-001',
+      descricao: 'Aditivo para aumento de prazo',
+      data: '2023-07-01',
+      valor: 'R$ 5.000,00',
+      status: 'ativo',
+    },
+    {
+      id: '102',
+      numero: '2023-A02',
+      contrato: '2023-002',
+      descricao: 'Aditivo para alteração de escopo',
+      data: '2023-04-15',
+      valor: 'R$ 2.500,00',
+      status: 'pendente',
+    },
+    {
+      id: '103',
+      numero: '2023-A03',
+      contrato: '2023-003',
+      descricao: 'Aditivo para reajuste de valor',
+      data: '2023-08-01',
+      valor: 'R$ 1.000,00',
+      status: 'cancelado',
+    },
   ];
+
+  const filtrarContratos = () => {
+    let filtrados = [...contratosData];
+    
+    if (filtroStatus !== "todos") {
+      filtrados = filtrados.filter(col => col.status === filtroStatus);
+    }
+    
+    return filtrados;
+  };
   
-  const contratosPorStatusData = [
-    { name: 'Jan', Vigentes: 45, Concluídos: 12, Vencidos: 5 },
-    { name: 'Fev', Vigentes: 48, Concluídos: 18, Vencidos: 7 },
-    { name: 'Mar', Vigentes: 52, Concluídos: 14, Vencidos: 4 },
-    { name: 'Abr', Vigentes: 55, Concluídos: 12, Vencidos: 3 },
-    { name: 'Mai', Vigentes: 49, Concluídos: 17, Vencidos: 2 },
-    { name: 'Jun', Vigentes: 50, Concluídos: 15, Vencidos: 5 },
-  ];
-  
-  const contratosPorStatusKeys = [
-    { key: 'Vigentes', name: 'Vigentes', color: '#2563eb' },
-    { key: 'Concluídos', name: 'Concluídos', color: '#16a34a' },
-    { key: 'Vencidos', name: 'Vencidos', color: '#ea580c' },
-  ];
-  
-  // Dados simulados para a tabela de contratos
-  const contratosColumns = [
-    { header: 'Código', accessorKey: 'codigo' },
+  const contratosColumns: Column[] = [
+    { header: 'Número', accessorKey: 'numero' },
     { header: 'Cliente', accessorKey: 'cliente' },
-    { header: 'Tipo', accessorKey: 'tipo',
-      cell: (value: string) => {
-        let badgeClass = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ";
+    { header: 'Descrição', accessorKey: 'descricao' },
+    { 
+      header: 'Início', 
+      accessorKey: 'dataInicio',
+      cell: ({ row }) => safeFormatDate(row.original.dataInicio)
+    },
+    { 
+      header: 'Término', 
+      accessorKey: 'dataTermino',
+      cell: ({ row }) => safeFormatDate(row.original.dataTermino)
+    },
+    { 
+      header: 'Status', 
+      accessorKey: 'status',
+      cell: ({ row }) => {
+        const value = row.original.status;
+        if (!value) return null;
+        
+        let badgeClass = "";
         switch(value) {
-          case 'SPCI':
-            badgeClass += "bg-brand-blue/10 text-brand-blue";
+          case 'ativo':
+            badgeClass = "bg-green-100 text-green-800";
             break;
-          case 'SPDA':
-            badgeClass += "bg-brand-green/10 text-brand-green";
+          case 'finalizado':
+            badgeClass = "bg-blue-100 text-blue-800";
             break;
-          case 'Construção':
-            badgeClass += "bg-brand-orange/10 text-brand-orange";
+          case 'cancelado':
+            badgeClass = "bg-red-100 text-red-800";
+            break;
+          case 'pendente':
+            badgeClass = "bg-yellow-100 text-yellow-800";
             break;
           default:
-            badgeClass += "bg-brand-purple/10 text-brand-purple";
+            badgeClass = "bg-gray-100 text-gray-800";
         }
-        return <span className={badgeClass}>{value}</span>;
+        
+        return <Badge className={badgeClass}>{value.charAt(0).toUpperCase() + value.slice(1)}</Badge>;
       }
     },
-    { header: 'Status', accessorKey: 'status', 
-      cell: (value: string) => {
-        let badgeClass = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ";
-        switch(value) {
-          case 'Vigente':
-            badgeClass += "bg-green-100 text-green-800";
-            break;
-          case 'Concluído':
-            badgeClass += "bg-blue-100 text-blue-800";
-            break;
-          case 'Vencido':
-            badgeClass += "bg-red-100 text-red-800";
-            break;
-          default:
-            badgeClass += "bg-gray-100 text-gray-800";
-        }
-        return <span className={badgeClass}>{value}</span>;
-      }
-    },
-    { header: 'Valor', accessorKey: 'valor' },
-    { header: 'Início', accessorKey: 'inicio' },
-    { header: 'Vencimento', accessorKey: 'vencimento' },
-    { header: 'Ações', accessorKey: 'acoes',
+    { 
+      header: 'Ações', 
+      accessorKey: 'acoes',
       cell: () => (
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-            <FileText className="h-4 w-4" />
+          <Button variant="outline" size="sm" className="text-xs h-8">
+            <FileText className="h-3 w-3 mr-1" /> Detalhes
           </Button>
-          <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-            <AlertTriangle className="h-4 w-4" />
+          <Button variant="outline" size="sm" className="text-xs h-8">
+            <MoreVertical className="h-3 w-3" />
           </Button>
         </div>
       )
-    },
+    }
   ];
-  
-  const contratosData = [
+
+  const additiveColumns: Column[] = [
+    { header: 'Número', accessorKey: 'numero' },
+    { header: 'Contrato', accessorKey: 'contrato' },
+    { header: 'Descrição', accessorKey: 'descricao' },
     { 
-      codigo: 'CONT-001', 
-      cliente: 'Empresa ABC', 
-      tipo: 'SPCI', 
-      status: 'Vigente', 
-      valor: 'R$ 45.800,00',
-      inicio: '10/01/2023',
-      vencimento: '10/01/2024'
+      header: 'Data', 
+      accessorKey: 'data',
+      cell: ({ row }) => safeFormatDate(row.original.data)
+    },
+    { header: 'Valor', accessorKey: 'valor' },
+    { 
+      header: 'Status', 
+      accessorKey: 'status',
+      cell: ({ row }) => {
+        const value = row.original.status;
+        if (!value) return null;
+        
+        let badgeClass = "";
+        switch(value) {
+          case 'ativo':
+            badgeClass = "bg-green-100 text-green-800";
+            break;
+          case 'pendente':
+            badgeClass = "bg-yellow-100 text-yellow-800";
+            break;
+          case 'cancelado':
+            badgeClass = "bg-red-100 text-red-800";
+            break;
+          default:
+            badgeClass = "bg-gray-100 text-gray-800";
+        }
+        
+        return <Badge className={badgeClass}>{value.charAt(0).toUpperCase() + value.slice(1)}</Badge>;
+      }
     },
     { 
-      codigo: 'CONT-002', 
-      cliente: 'Indústria XYZ', 
-      tipo: 'SPDA', 
-      status: 'Vigente', 
-      valor: 'R$ 32.400,00',
-      inicio: '15/02/2023',
-      vencimento: '15/02/2024'
-    },
-    { 
-      codigo: 'CONT-003', 
-      cliente: 'Construção Nacional', 
-      tipo: 'Construção', 
-      status: 'Concluído', 
-      valor: 'R$ 128.900,00',
-      inicio: '05/11/2022',
-      vencimento: '05/04/2023'
-    },
-    { 
-      codigo: 'CONT-004', 
-      cliente: 'Hospital Central', 
-      tipo: 'SPCI', 
-      status: 'Vigente', 
-      valor: 'R$ 67.300,00',
-      inicio: '22/03/2023',
-      vencimento: '22/03/2024'
-    },
-    { 
-      codigo: 'CONT-005', 
-      cliente: 'Comércio Varejo SA', 
-      tipo: 'SPDA', 
-      status: 'Vencido', 
-      valor: 'R$ 18.750,00',
-      inicio: '30/06/2022',
-      vencimento: '30/06/2023'
-    },
-    { 
-      codigo: 'CONT-006', 
-      cliente: 'Edifício Corporativo', 
-      tipo: 'Outros', 
-      status: 'Vigente', 
-      valor: 'R$ 54.200,00',
-      inicio: '12/05/2023',
-      vencimento: '12/05/2024'
-    },
+      header: 'Ações', 
+      accessorKey: 'acoes',
+      cell: () => (
+        <Button variant="outline" size="sm" className="text-xs h-8">
+          <FileText className="h-3 w-3 mr-1" /> Visualizar
+        </Button>
+      )
+    }
   ];
-  
+
   return (
     <MainLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Contratos</h1>
           <Button className="bg-brand-blue hover:bg-brand-blue/90">
-            <Plus className="mr-2 h-4 w-4" /> Novo Contrato
+            <PlusCircle className="mr-2 h-4 w-4" /> Novo Contrato
           </Button>
         </div>
         
-        {/* Dashboard de Contratos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <BarChart 
-            title="Contratos por Tipo" 
-            data={contratosPorTipoData} 
-            dataKeys={contratosPorTipoKeys} 
-          />
-          <BarChart 
-            title="Contratos por Status" 
-            data={contratosPorStatusData} 
-            dataKeys={contratosPorStatusKeys} 
-          />
-        </div>
-        
-        {/* Tabela de contratos com filtros */}
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>Gestão de Contratos</CardTitle>
-            <Tabs 
-              defaultValue="todos" 
-              className="w-full"
-              value={activeTab}
-              onValueChange={setActiveTab}
-            >
-              <div className="flex justify-between items-center">
-                <TabsList>
-                  <TabsTrigger value="todos">Todos</TabsTrigger>
-                  <TabsTrigger value="vigentes">Vigentes</TabsTrigger>
-                  <TabsTrigger value="vencidos">Vencidos</TabsTrigger>
-                  <TabsTrigger value="concluidos">Concluídos</TabsTrigger>
-                </TabsList>
-                
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
-                    <Filter className="h-4 w-4 mr-2" /> Filtros
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <FileSpreadsheet className="h-4 w-4 mr-2" /> Exportar
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Printer className="h-4 w-4 mr-2" /> Imprimir
-                  </Button>
-                </div>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-lg">Gestão de Contratos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="md:flex justify-between items-center mb-4">
+              <div className="relative w-full md:w-auto">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <Input
+                  type="search"
+                  placeholder="Buscar contrato..."
+                  className="pl-9 h-9"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
               </div>
               
-              <div className="mt-4 flex gap-3">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                    <Input
-                      type="search"
-                      placeholder="Buscar contrato..."
-                      className="pl-9 h-9"
-                    />
-                  </div>
-                </div>
-                <Select defaultValue="todos">
-                  <SelectTrigger className="w-[180px] h-9">
-                    <SelectValue placeholder="Tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos os tipos</SelectItem>
-                    <SelectItem value="spci">SPCI</SelectItem>
-                    <SelectItem value="spda">SPDA</SelectItem>
-                    <SelectItem value="construcao">Construção</SelectItem>
-                    <SelectItem value="outros">Outros</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select defaultValue="todos">
+              <div className="flex gap-2 mt-2 md:mt-0">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Calendar className="h-4 w-4 mr-2" /> Agendar Revisão
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <div className="p-3">
+                      <h3 className="font-medium mb-2">Agendar Revisão</h3>
+                      <CalendarComponent
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        locale={ptBR}
+                        className="rounded-md border"
+                      />
+                      <div className="mt-4 flex justify-end">
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            toast({
+                              title: "Revisão agendada",
+                              description: `Revisão agendada para ${date ? format(date, 'dd/MM/yyyy') : 'data selecionada'}.`,
+                            });
+                          }}
+                        >
+                          Confirmar
+                        </Button>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                
+                <Select 
+                  value={filtroStatus} 
+                  onValueChange={setFiltroStatus}
+                >
                   <SelectTrigger className="w-[180px] h-9">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="todos">Todos os status</SelectItem>
-                    <SelectItem value="vigente">Vigente</SelectItem>
-                    <SelectItem value="vencido">Vencido</SelectItem>
-                    <SelectItem value="concluido">Concluído</SelectItem>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="ativo">Ativo</SelectItem>
+                    <SelectItem value="pendente">Pendente</SelectItem>
+                    <SelectItem value="finalizado">Finalizado</SelectItem>
+                    <SelectItem value="cancelado">Cancelado</SelectItem>
                   </SelectContent>
                 </Select>
+                
+                <Button variant="outline" size="sm">
+                  <Filter className="h-4 w-4 mr-2" /> Filtros Avançados
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-2" /> Exportar
+                </Button>
               </div>
-              
-              <TabsContent value="todos" className="pt-4">
-                <DataTable
-                  columns={contratosColumns}
-                  data={contratosData}
-                  itemsPerPage={10}
-                />
-              </TabsContent>
-              <TabsContent value="vigentes" className="pt-4">
-                <DataTable
-                  columns={contratosColumns}
-                  data={contratosData.filter(item => item.status === 'Vigente')}
-                  itemsPerPage={10}
-                />
-              </TabsContent>
-              <TabsContent value="vencidos" className="pt-4">
-                <DataTable
-                  columns={contratosColumns}
-                  data={contratosData.filter(item => item.status === 'Vencido')}
-                  itemsPerPage={10}
-                />
-              </TabsContent>
-              <TabsContent value="concluidos" className="pt-4">
-                <DataTable
-                  columns={contratosColumns}
-                  data={contratosData.filter(item => item.status === 'Concluído')}
-                  itemsPerPage={10}
-                />
-              </TabsContent>
-            </Tabs>
-          </CardHeader>
+            </div>
+            
+            <h3 className="text-lg font-medium mb-3">Contratos Ativos</h3>
+            <DataTable
+              columns={contratosColumns}
+              data={filtrarContratos()}
+              itemsPerPage={5}
+            />
+            
+            <h3 className="text-lg font-medium mt-8 mb-3">Aditivos Contratuais</h3>
+            <DataTable
+              columns={additiveColumns}
+              data={aditivosData}
+              itemsPerPage={5}
+            />
+          </CardContent>
         </Card>
       </div>
     </MainLayout>

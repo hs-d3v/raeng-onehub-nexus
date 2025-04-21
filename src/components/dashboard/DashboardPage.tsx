@@ -1,9 +1,8 @@
-
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import StatsCard from '@/components/widgets/StatsCard';
 import BarChart from '@/components/charts/BarChart';
-import DataTable from '@/components/ui/DataTable';
+import DataTable, { Column } from '@/components/ui/DataTable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   Users, 
@@ -13,9 +12,9 @@ import {
   AlertTriangle, 
   Calendar
 } from 'lucide-react';
+import { safeFormatDate } from '@/utils/dateUtils';
 
 const DashboardPage = () => {
-  // Dados simulados para os gráficos
   const contratosPorStatusData = [
     { name: 'Janeiro', Vigentes: 45, Concluídos: 12, Vencidos: 5 },
     { name: 'Fevereiro', Vigentes: 48, Concluídos: 18, Vencidos: 7 },
@@ -47,7 +46,6 @@ const DashboardPage = () => {
     { key: 'Jun', name: 'Junho', color: '#db2777' },
   ];
   
-  // Dados simulados para a tabela de alertas
   const alertasColumns = [
     { header: 'Tipo', accessorKey: 'tipo', 
       cell: (value: string) => {
@@ -139,12 +137,74 @@ const DashboardPage = () => {
     },
   ];
 
+  const proximosVencimentosColumns: Column[] = [
+    { 
+      header: 'Tipo', 
+      accessorKey: 'tipo',
+      cell: ({ row }) => {
+        const value = row.original.tipo;
+        if (!value) return null;
+        
+        let badgeClass = "";
+        switch(value) {
+          case 'ASO':
+            badgeClass = "bg-blue-100 text-blue-800";
+            break;
+          case 'EPI':
+            badgeClass = "bg-green-100 text-green-800";
+            break;
+          case 'Treinamento':
+            badgeClass = "bg-purple-100 text-purple-800";
+            break;
+          case 'Certificação':
+            badgeClass = "bg-orange-100 text-orange-800";
+            break;
+          default:
+            badgeClass = "bg-gray-100 text-gray-800";
+        }
+        
+        return <Badge variant="outline" className={badgeClass}>{value}</Badge>;
+      }
+    },
+    { header: 'Item', accessorKey: 'descricao' },
+    { header: 'Colaborador', accessorKey: 'colaborador' },
+    { 
+      header: 'Vencimento', 
+      accessorKey: 'dataVencimento',
+      cell: ({ row }) => safeFormatDate(row.original.dataVencimento)
+    },
+    { 
+      header: 'Dias Restantes', 
+      accessorKey: 'diasRestantes',
+      cell: ({ row }) => {
+        const value = row.original.diasRestantes;
+        let className = '';
+        
+        if (value <= 0) {
+          className = 'text-red-600 font-medium';
+        } else if (value <= 30) {
+          className = 'text-yellow-600 font-medium';
+        }
+        
+        return <span className={className}>{value <= 0 ? 'Vencido' : `${value} dias`}</span>;
+      }
+    },
+    { 
+      header: 'Ações', 
+      accessorKey: 'acoes',
+      cell: () => (
+        <Button variant="outline" size="sm" className="text-xs h-8">
+          Ver Detalhes
+        </Button>
+      )
+    },
+  ];
+
   return (
     <MainLayout>
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">Dashboard</h1>
         
-        {/* Cards de estatísticas */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatsCard 
             title="Contratos Ativos" 
@@ -176,7 +236,6 @@ const DashboardPage = () => {
           />
         </div>
         
-        {/* Gráficos */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <BarChart 
             title="Contratos por Status" 
@@ -190,7 +249,6 @@ const DashboardPage = () => {
           />
         </div>
         
-        {/* Tabela de alertas */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -207,7 +265,6 @@ const DashboardPage = () => {
           </CardContent>
         </Card>
         
-        {/* Próximos eventos */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -250,6 +307,22 @@ const DashboardPage = () => {
                 </div>
               </div>
             </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-brand-blue" />
+              Próximos Vencimentos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DataTable 
+              columns={proximosVencimentosColumns} 
+              data={alertasData} 
+              itemsPerPage={5} 
+            />
           </CardContent>
         </Card>
       </div>

@@ -1,16 +1,16 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
+import { Calendar, Clock, AlertTriangle, CheckCircle, LucideCalendarClock, PlusCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import DataTable from '@/components/ui/DataTable';
+import DataTable, { Column } from '@/components/ui/DataTable';
+import { safeFormatDate } from '@/utils/dateUtils';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { Progress } from '@/components/ui/progress';
 import { format, addDays, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 
 interface ControleJornadaFeriasProps {
   colaboradorId?: string;
@@ -213,280 +213,225 @@ const ControleJornadaFerias: React.FC<ControleJornadaFeriasProps> = ({ colaborad
     }
   }, [colaboradorId]);
 
-  const pontosColumns = [
+  const pontosColumns: Column[] = [
     { 
       header: 'Data', 
       accessorKey: 'data',
-      cell: (value: string) => format(new Date(value), 'dd/MM/yyyy (EEE)', { locale: ptBR })
+      cell: ({ row }) => safeFormatDate(row.original.data)
     },
+    { header: 'Dia da Semana', accessorKey: 'diaSemana' },
     { 
       header: 'Entrada', 
       accessorKey: 'entrada',
+      cell: ({ row }) => row.original.entrada || '—'
     },
     { 
       header: 'Saída Almoço', 
-      accessorKey: 'saida_almoco',
+      accessorKey: 'saidaAlmoco',
+      cell: ({ row }) => row.original.saidaAlmoco || '—'
     },
     { 
       header: 'Retorno Almoço', 
-      accessorKey: 'retorno_almoco',
+      accessorKey: 'retornoAlmoco',
+      cell: ({ row }) => row.original.retornoAlmoco || '—'
     },
     { 
       header: 'Saída', 
       accessorKey: 'saida',
+      cell: ({ row }) => row.original.saida || '—'
     },
     { 
-      header: 'Total Horas', 
-      accessorKey: 'total_horas',
-      cell: (value: number) => `${value}h`
+      header: 'Total', 
+      accessorKey: 'horasTrabalhadas',
+      cell: ({ row }) => row.original.horasTrabalhadas || '—'
     },
     { 
       header: 'Status', 
       accessorKey: 'status',
-      cell: (value: string) => {
-        let badgeClass = "";
-        let icon = null;
-        let label = "";
+      cell: ({ row }) => {
+        const value = row.original.status;
+        if (!value) return null;
         
+        let badgeClass = "";
         switch(value) {
-          case 'regular':
+          case 'normal':
             badgeClass = "bg-green-100 text-green-800";
-            icon = <CheckCircle className="h-3 w-3 mr-1" />;
-            label = "Regular";
             break;
-          case 'hora_extra':
-            badgeClass = "bg-blue-100 text-blue-800";
-            icon = <Clock className="h-3 w-3 mr-1" />;
-            label = "Hora Extra";
+          case 'falta':
+            badgeClass = "bg-red-100 text-red-800";
             break;
           case 'atraso':
             badgeClass = "bg-yellow-100 text-yellow-800";
-            icon = <AlertTriangle className="h-3 w-3 mr-1" />;
-            label = "Atraso";
             break;
-          case 'saida_antecipada':
-            badgeClass = "bg-yellow-100 text-yellow-800";
-            icon = <Clock className="h-3 w-3 mr-1" />;
-            label = "Saída Antecipada";
-            break;
-          case 'ausente':
-            badgeClass = "bg-red-100 text-red-800";
-            icon = <AlertTriangle className="h-3 w-3 mr-1" />;
-            label = "Ausente";
+          case 'ferias':
+            badgeClass = "bg-blue-100 text-blue-800";
             break;
           case 'folga':
-            badgeClass = "bg-gray-100 text-gray-800";
-            icon = <Calendar className="h-3 w-3 mr-1" />;
-            label = "Folga";
-            break;
-          default:
-            badgeClass = "bg-gray-100 text-gray-800";
-            label = value;
-        }
-        
-        return (
-          <Badge className={badgeClass}>
-            <div className="flex items-center">
-              {icon}
-              {label}
-            </div>
-          </Badge>
-        );
-      }
-    },
-  ];
-
-  const feriasColumns = [
-    { 
-      header: 'Tipo', 
-      accessorKey: 'tipo',
-      cell: (value: string) => value.charAt(0).toUpperCase() + value.slice(1)
-    },
-    { 
-      header: 'Data Início', 
-      accessorKey: 'data_inicio',
-      cell: (value: string) => {
-        const data = new Date(value);
-        return data.toLocaleDateString('pt-BR');
-      }
-    },
-    { 
-      header: 'Data Fim', 
-      accessorKey: 'data_fim',
-      cell: (value: string) => {
-        const data = new Date(value);
-        return data.toLocaleDateString('pt-BR');
-      }
-    },
-    { 
-      header: 'Total Dias', 
-      accessorKey: 'total_dias',
-    },
-    { 
-      header: 'Status', 
-      accessorKey: 'status',
-      cell: (value: string) => {
-        let badgeClass = "";
-        let icon = null;
-        
-        switch(value) {
-          case 'aprovada':
-            badgeClass = "bg-green-100 text-green-800";
-            icon = <CheckCircle className="h-3 w-3 mr-1" />;
-            break;
-          case 'pendente':
-            badgeClass = "bg-yellow-100 text-yellow-800";
-            icon = <Clock className="h-3 w-3 mr-1" />;
-            break;
-          case 'concluida':
-            badgeClass = "bg-blue-100 text-blue-800";
-            icon = <CheckCircle className="h-3 w-3 mr-1" />;
+            badgeClass = "bg-purple-100 text-purple-800";
             break;
           default:
             badgeClass = "bg-gray-100 text-gray-800";
         }
         
-        return (
-          <Badge className={badgeClass}>
-            <div className="flex items-center">
-              {icon}
-              {value.charAt(0).toUpperCase() + value.slice(1)}
-            </div>
-          </Badge>
-        );
+        return <Badge className={badgeClass}>{value.charAt(0).toUpperCase() + value.slice(1)}</Badge>;
       }
-    },
-    { 
-      header: 'Ações', 
-      accessorKey: 'acoes',
-      cell: (row: any) => (
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="text-xs h-8">
-            <FileText className="h-3 w-3 mr-1" /> Detalhes
-          </Button>
-        </div>
-      )
-    },
+    }
   ];
 
-  const ausenciasColumns = [
-    { 
-      header: 'Tipo', 
-      accessorKey: 'tipo',
-      cell: (value: string) => value.charAt(0).toUpperCase() + value.slice(1)
-    },
-    { 
-      header: 'Período', 
-      accessorKey: 'periodo',
-      cell: (row: any) => {
-        const dataInicio = new Date(row.data_inicio);
-        const dataFim = new Date(row.data_fim);
-        
-        if (dataInicio.getTime() === dataFim.getTime()) {
-          return dataInicio.toLocaleDateString('pt-BR');
-        } else {
-          return `${dataInicio.toLocaleDateString('pt-BR')} a ${dataFim.toLocaleDateString('pt-BR')}`;
-        }
-      }
-    },
-    {
-      header: 'Dias', 
-      accessorKey: 'total_dias',
-    },
-    { 
-      header: 'Motivo', 
-      accessorKey: 'motivo',
-    },
-    { 
-      header: 'Status', 
-      accessorKey: 'status',
-      cell: (value: string) => {
-        let badgeClass = "";
-        
-        switch(value) {
-          case 'justificada':
-            badgeClass = "bg-green-100 text-green-800";
-            break;
-          case 'injustificada':
-            badgeClass = "bg-red-100 text-red-800";
-            break;
-          default:
-            badgeClass = "bg-gray-100 text-gray-800";
-        }
-        
-        return (
-          <Badge className={badgeClass}>
-            {value.charAt(0).toUpperCase() + value.slice(1)}
-          </Badge>
-        );
-      }
-    },
-    { 
-      header: 'Ações', 
-      accessorKey: 'acoes',
-      cell: (row: any) => (
-        <div className="flex gap-2">
-          {row.documento_url && (
-            <Button variant="outline" size="sm" className="text-xs h-8">
-              <FileText className="h-3 w-3 mr-1" /> Documento
-            </Button>
-          )}
-        </div>
-      )
-    },
-  ];
-
-  const bancoHorasColumns = [
+  const horasExtrasColumns: Column[] = [
     { 
       header: 'Data', 
       accessorKey: 'data',
-      cell: (value: string) => {
-        const data = new Date(value);
-        return data.toLocaleDateString('pt-BR');
-      }
+      cell: ({ row }) => safeFormatDate(row.original.data)
+    },
+    { header: 'Tipo', accessorKey: 'tipo' },
+    { 
+      header: 'Horas', 
+      accessorKey: 'horas',
+      cell: ({ row }) => row.original.horas
     },
     { 
-      header: 'Tipo', 
-      accessorKey: 'tipo',
-      cell: (value: string) => {
-        let badgeClass = "";
+      header: 'Motivo', 
+      accessorKey: 'motivo'
+    },
+    { 
+      header: 'Status', 
+      accessorKey: 'status',
+      cell: ({ row }) => {
+        const value = row.original.status;
+        if (!value) return null;
         
+        let badgeClass = "";
         switch(value) {
-          case 'crédito':
+          case 'aprovado':
             badgeClass = "bg-green-100 text-green-800";
             break;
-          case 'débito':
+          case 'pendente':
+            badgeClass = "bg-yellow-100 text-yellow-800";
+            break;
+          case 'recusado':
             badgeClass = "bg-red-100 text-red-800";
             break;
           default:
             badgeClass = "bg-gray-100 text-gray-800";
         }
         
-        return (
-          <Badge className={badgeClass}>
-            {value.charAt(0).toUpperCase() + value.slice(1)}
-          </Badge>
-        );
+        return <Badge className={badgeClass}>{value.charAt(0).toUpperCase() + value.slice(1)}</Badge>;
       }
     },
     { 
-      header: 'Horas', 
-      accessorKey: 'horas',
-      cell: (value: string) => `${value}h`
+      header: 'Ações', 
+      accessorKey: 'acoes',
+      cell: () => (
+        <Button variant="outline" size="sm" className="text-xs h-8">
+          Detalhes
+        </Button>
+      )
+    }
+  ];
+
+  const feriasColumns: Column[] = [
+    { 
+      header: 'Período Aquisitivo', 
+      accessorKey: 'periodoAquisitivo',
+      cell: ({ row }) => row.original.periodoAquisitivo
     },
     { 
-      header: 'Motivo', 
-      accessorKey: 'motivo',
+      header: 'Início', 
+      accessorKey: 'inicio',
+      cell: ({ row }) => safeFormatDate(row.original.inicio)
     },
     { 
-      header: 'Autorizado Por', 
-      accessorKey: 'autorizado_por',
+      header: 'Fim', 
+      accessorKey: 'fim',
+      cell: ({ row }) => safeFormatDate(row.original.fim)
     },
     { 
-      header: 'Saldo Resultante', 
-      accessorKey: 'saldo_resultante',
-      cell: (value: string) => `${value}h`
+      header: 'Dias', 
+      accessorKey: 'dias',
+      cell: ({ row }) => row.original.dias.toString()
     },
+    { 
+      header: 'Abono', 
+      accessorKey: 'abono',
+      cell: ({ row }) => row.original.abono ? 'Sim' : 'Não'
+    },
+    { 
+      header: 'Status', 
+      accessorKey: 'status',
+      cell: ({ row }) => {
+        const value = row.original.status;
+        if (!value) return null;
+        
+        let badgeClass = "";
+        switch(value) {
+          case 'programada':
+            badgeClass = "bg-blue-100 text-blue-800";
+            break;
+          case 'aprovada':
+            badgeClass = "bg-green-100 text-green-800";
+            break;
+          case 'gozada':
+            badgeClass = "bg-purple-100 text-purple-800";
+            break;
+          case 'pendente':
+            badgeClass = "bg-yellow-100 text-yellow-800";
+            break;
+          case 'negada':
+            badgeClass = "bg-red-100 text-red-800";
+            break;
+          default:
+            badgeClass = "bg-gray-100 text-gray-800";
+        }
+        
+        return <Badge className={badgeClass}>{value.charAt(0).toUpperCase() + value.slice(1)}</Badge>;
+      }
+    },
+    { 
+      header: 'Ações', 
+      accessorKey: 'acoes',
+      cell: () => (
+        <Button variant="outline" size="sm" className="text-xs h-8">
+          Detalhes
+        </Button>
+      )
+    }
+  ];
+
+  const bancoHorasColumns: Column[] = [
+    { 
+      header: 'Data', 
+      accessorKey: 'data',
+      cell: ({ row }) => safeFormatDate(row.original.data)
+    },
+    { 
+      header: 'Descrição', 
+      accessorKey: 'descricao'
+    },
+    { 
+      header: 'Crédito', 
+      accessorKey: 'credito',
+      cell: ({ row }) => row.original.credito ? row.original.credito : '—'
+    },
+    { 
+      header: 'Débito', 
+      accessorKey: 'debito',
+      cell: ({ row }) => row.original.debito ? row.original.debito : '—'
+    },
+    { 
+      header: 'Saldo', 
+      accessorKey: 'saldo',
+      cell: ({ row }) => {
+        const value = row.original.saldo;
+        const isPositive = value >= 0;
+        
+        return (
+          <span className={isPositive ? 'text-green-600' : 'text-red-600'}>
+            {isPositive ? '+' : ''}{value}h
+          </span>
+        );
+      }
+    }
   ];
 
   return (
@@ -532,6 +477,7 @@ const ControleJornadaFerias: React.FC<ControleJornadaFeriasProps> = ({ colaborad
                   <span>Taxa de Presença</span>
                   <span className="font-medium">96%</span>
                 </div>
+                {/* Replace with actual data */}
                 <Progress value={96} className="h-2" />
               </div>
               <div>
@@ -539,6 +485,7 @@ const ControleJornadaFerias: React.FC<ControleJornadaFeriasProps> = ({ colaborad
                   <span>Pontualidade</span>
                   <span className="font-medium">92%</span>
                 </div>
+                {/* Replace with actual data */}
                 <Progress value={92} className="h-2" />
               </div>
             </div>
