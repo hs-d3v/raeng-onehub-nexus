@@ -9,7 +9,7 @@ import DataTable from '@/components/ui/DataTable';
 import BarChart from '@/components/charts/BarChart';
 import {
   UserPlus, Search, Filter, Download, UserCheck, Clock, Calendar, Award, FileText,
-  AlertTriangle, Users, MoreVertical, Edit, Trash2 // Usado para o botão de menu de ações
+  AlertTriangle, Users, MoreVertical, Edit, Trash2
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -111,7 +111,6 @@ const ColaboradoresPage = () => {
 
   const [idExcluindo, setIdExcluindo] = useState<string | null>(null);
 
-  // Função para excluir colaborador
   const handleExcluirColaborador = async (colaboradorId: string) => {
     if (!window.confirm("Confirma a exclusão deste colaborador?")) return;
     try {
@@ -251,7 +250,7 @@ const ColaboradoresPage = () => {
     { 
       header: 'Ações', 
       accessorKey: 'acoes',
-      cell: (value: any, row: any) => {
+      cell: ({ row }) => {
         if (!row || !row.original) return null;
         const colaborador = row.original;
         return (
@@ -261,7 +260,7 @@ const ColaboradoresPage = () => {
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </ContextMenuTrigger>
-            <ContextMenuContent align="end" className="w-40">
+            <ContextMenuContent className="w-40">
               <ContextMenuItem
                 onClick={() => navigate(`/colaboradores/${colaborador.id}`)}
               >
@@ -271,7 +270,6 @@ const ColaboradoresPage = () => {
               </ContextMenuItem>
               <ContextMenuItem
                 onClick={() => {
-                  // Para futura implementação de edição, redireciona para a página de edição (placeholder)
                   navigate(`/colaboradores/${colaborador.id}/editar`);
                 }}
               >
@@ -335,7 +333,6 @@ const ColaboradoresPage = () => {
     });
   };
 
-  // Função para mapear os dados do colaborador para o formato esperado pelo DataTable
   const prepareColaboradoresData = (colaboradores: any[]) => {
     return colaboradores.map(col => ({
       ...col,
