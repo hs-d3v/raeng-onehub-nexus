@@ -1,12 +1,15 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { QrCode, Search, Check, ArrowRight, Trash, Plus } from 'lucide-react';
+import { QrCode, Search, Check, ArrowRight, Trash, Plus, Filter, SortAsc, SortDesc } from 'lucide-react';
 import QRScanner from './QRScanner';
+import { parseQRData } from '@/config/qr-config';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Employee {
   id: string;
@@ -23,20 +26,33 @@ interface FlowItem {
   code: string;
   type: string;
   quantity: number;
+  category?: string;
+  estado?: string;
+  local?: string;
 }
 
 interface ItemScannerProps {
   employee: Employee;
   items: FlowItem[];
   onAddItem: (item: FlowItem) => void;
+  onRemoveItem?: (id: string) => void;
   onContinue: () => void;
+  types?: string[];
+  showCategories?: boolean;
+  showLocations?: boolean;
+  showStates?: boolean;
 }
 
 const ItemScanner: React.FC<ItemScannerProps> = ({ 
   employee, 
   items,
   onAddItem,
-  onContinue
+  onRemoveItem,
+  onContinue,
+  types = ['EPI', 'Ferramenta', 'Máquina', 'Insumo'],
+  showCategories = true,
+  showLocations = true,
+  showStates = true
 }) => {
   const { toast } = useToast();
   const [scanActive, setScanActive] = useState(false);
@@ -44,98 +60,349 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
   const [searchResults, setSearchResults] = useState<FlowItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [itemQuantity, setItemQuantity] = useState(1);
+  const [selectedType, setSelectedType] = useState<string>(types[0]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedLocation, setSelectedLocation] = useState<string>('');
+  const [selectedState, setSelectedState] = useState<string>('');
+  const [categories, setCategories] = useState<string[]>([]);
+  const [locations, setLocations] = useState<string[]>([]);
+  const [states, setStates] = useState<string[]>([]);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  // Dados simulados de itens
-  const mockItems: FlowItem[] = [
-    {
-      id: '1',
-      name: 'Capacete de Segurança',
-      code: 'EPI-001',
-      type: 'EPI',
-      quantity: 1
-    },
-    {
-      id: '2',
-      name: 'Luva de Proteção',
-      code: 'EPI-002',
-      type: 'EPI',
-      quantity: 1
-    },
-    {
-      id: '3',
-      name: 'Óculos de Segurança',
-      code: 'EPI-003',
-      type: 'EPI',
-      quantity: 1
-    },
-    {
-      id: '4',
-      name: 'Furadeira Industrial',
-      code: 'FERR-001',
-      type: 'Ferramenta',
-      quantity: 1
-    },
-    {
-      id: '5',
-      name: 'Chave de Fenda',
-      code: 'FERR-002',
-      type: 'Ferramenta',
-      quantity: 1
-    }
-  ];
+  // Load categories, locations and states
+  useEffect(() => {
+    const loadPredefinedData = async () => {
+      try {
+        // Load categories based on selected type
+        const typeMap: Record<string, string> = {
+          'EPI': 'epis',
+          'Ferramenta': 'ferramentas',
+          'Máquina': 'maquinas',
+          'Insumo': 'insumos'
+        };
+        
+        const tableName = typeMap[selectedType] || '';
+        
+        if (tableName && showCategories) {
+          const { data, error } = await supabase
+            .from(tableName)
+            .select('categoria')
+            .not('categoria', 'is', null);
+          
+          if (!error && data) {
+            const uniqueCategories = [...new Set(data.map(item => item.categoria))].filter(Boolean);
+            setCategories(uniqueCategories as string[]);
+          }
+        }
+        
+        // Load states from predefined registers
+        if (showStates) {
+          const { data: statesData, error: statesError } = await supabase
+            .from('cadastros_predefinidos')
+            .select('valor')
+            .eq('tipo', 'estado_item');
+          
+          if (!statesError && statesData) {
+            const uniqueStates = statesData.map(item => item.valor);
+            setStates(uniqueStates);
+          } else {
+            // Fallback to default states
+            setStates([
+              'Novo', 'Usado', 'Desgaste normal', 
+              'Danificado', 'Contaminado', 'Vencido'
+            ]);
+          }
+        }
+        
+        // Load locations from predefined registers
+        if (showLocations) {
+          const { data: locationsData, error: locationsError } = await supabase
+            .from('cadastros_predefinidos')
+            .select('valor')
+            .eq('tipo', 'local_uso');
+          
+          if (!locationsData && locationsError) {
+            const uniqueLocations = locationsData?.map(item => item.valor);
+            setLocations(uniqueLocations || []);
+          } else {
+            // Fallback to default locations
+            setLocations([
+              'Almoxarifado Central', 'Canteiro A', 'Canteiro B', 
+              'Escritório', 'Depósito', 'Veículo'
+            ]);
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao carregar dados predefinidos:', error);
+      }
+    };
+    
+    loadPredefinedData();
+  }, [selectedType, showCategories, showLocations, showStates]);
 
   // Lidar com escaneamento de QR do item
-  const handleQRScan = (data: string) => {
+  const handleQRScan = async (data: string, parsedData?: ReturnType<typeof parseQRData>) => {
     setScanActive(false);
     
     toast({
       title: "QR Code detectado",
-      description: `Código: ${data}`,
+      description: `Código: ${data.substring(0, 15)}...`,
     });
     
+    try {
+      if (parsedData) {
+        const { type, entityId } = parsedData;
+        
+        // Determine which table to query based on the QR code type
+        let tableName = '';
+        let itemType = '';
+        
+        switch (type) {
+          case 'epi':
+            tableName = 'epis';
+            itemType = 'EPI';
+            break;
+          case 'tool':
+            tableName = 'ferramentas';
+            itemType = 'Ferramenta';
+            break;
+          case 'equipment':
+            tableName = 'maquinas';
+            itemType = 'Máquina';
+            break;
+          case 'material':
+            tableName = 'insumos';
+            itemType = 'Insumo';
+            break;
+          default:
+            throw new Error('Tipo de item desconhecido');
+        }
+        
+        // Query the database for the item
+        const { data: itemData, error } = await supabase
+          .from(tableName)
+          .select('*')
+          .eq('id', entityId)
+          .single();
+        
+        if (error || !itemData) {
+          throw new Error(`Item não encontrado: ${error?.message}`);
+        }
+        
+        // Create the flow item
+        const newItem: FlowItem = {
+          id: itemData.id,
+          name: itemData.nome,
+          code: itemData.codigo || `${itemType}-${itemData.id.substring(0, 8)}`,
+          type: itemType,
+          quantity: itemQuantity,
+          category: itemData.categoria,
+          estado: selectedState || 'Normal',
+          local: selectedLocation || 'Não especificado'
+        };
+        
+        onAddItem(newItem);
+        setItemQuantity(1);
+        
+        toast({
+          title: "Item adicionado",
+          description: `${newItem.name} adicionado com sucesso`,
+        });
+      } else {
+        // Fallback to mock data if QR parsing fails
+        simulateItemFind();
+      }
+    } catch (error) {
+      console.error('Erro ao processar QR do item:', error);
+      toast({
+        title: "Erro na leitura",
+        description: error instanceof Error ? error.message : "Não foi possível identificar o item",
+        variant: "destructive"
+      });
+      
+      // Fallback to mock data
+      simulateItemFind();
+    }
+  };
+
+  // Function to simulate finding an item
+  const simulateItemFind = () => {
     // Simulando encontrar o item pelo QR
     setTimeout(() => {
-      const randomIndex = Math.floor(Math.random() * mockItems.length);
-      const foundItem = {
-        ...mockItems[randomIndex],
-        quantity: itemQuantity
-      };
+      let mockItem: FlowItem;
       
-      onAddItem(foundItem);
+      switch (selectedType) {
+        case 'EPI':
+          mockItem = {
+            id: `epi-${Date.now()}`,
+            name: 'Capacete de Segurança',
+            code: 'EPI-001',
+            type: 'EPI',
+            quantity: itemQuantity,
+            category: 'Proteção da cabeça',
+            estado: selectedState || 'Novo',
+            local: selectedLocation || 'Almoxarifado'
+          };
+          break;
+        case 'Ferramenta':
+          mockItem = {
+            id: `ferramenta-${Date.now()}`,
+            name: 'Furadeira Industrial',
+            code: 'FERR-001',
+            type: 'Ferramenta',
+            quantity: itemQuantity,
+            category: 'Elétrica',
+            estado: selectedState || 'Bom estado',
+            local: selectedLocation || 'Canteiro A'
+          };
+          break;
+        case 'Máquina':
+          mockItem = {
+            id: `maquina-${Date.now()}`,
+            name: 'Retroescavadeira',
+            code: 'MAQ-001',
+            type: 'Máquina',
+            quantity: itemQuantity,
+            category: 'Pesada',
+            estado: selectedState || 'Em operação',
+            local: selectedLocation || 'Canteiro B'
+          };
+          break;
+        default:
+          mockItem = {
+            id: `insumo-${Date.now()}`,
+            name: 'Cimento Portland',
+            code: 'INS-001',
+            type: 'Insumo',
+            quantity: itemQuantity,
+            category: 'Material de construção',
+            estado: selectedState || 'Novo',
+            local: selectedLocation || 'Depósito'
+          };
+      }
+      
+      onAddItem(mockItem);
       setItemQuantity(1);
     }, 500);
   };
 
   // Simulação de pesquisa de itens
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
     setIsSearching(true);
     
-    // Simulação de delay de API
-    setTimeout(() => {
-      const results = mockItems.filter(
-        item => item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-               item.code.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+    try {
+      // Determine which table to search based on selectedType
+      let tableName = '';
       
-      setSearchResults(results);
-      setIsSearching(false);
-      
-      if (results.length === 0) {
-        toast({
-          title: "Nenhum item encontrado",
-          description: "Tente outro termo de busca",
-        });
+      switch (selectedType) {
+        case 'EPI':
+          tableName = 'epis';
+          break;
+        case 'Ferramenta':
+          tableName = 'ferramentas';
+          break;
+        case 'Máquina':
+          tableName = 'maquinas';
+          break;
+        case 'Insumo':
+          tableName = 'insumos';
+          break;
       }
-    }, 500);
+      
+      if (tableName) {
+        // Construct query with filters
+        let query = supabase
+          .from(tableName)
+          .select('*')
+          .or(`nome.ilike.%${searchQuery}%,codigo.ilike.%${searchQuery}%`)
+          .limit(10);
+        
+        // Add category filter if selected
+        if (selectedCategory) {
+          query = query.eq('categoria', selectedCategory);
+        }
+        
+        // Execute query
+        const { data, error } = await query;
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          // Map results to FlowItem format
+          const results: FlowItem[] = data.map(item => ({
+            id: item.id,
+            name: item.nome,
+            code: item.codigo || `${selectedType}-${item.id.substring(0, 8)}`,
+            type: selectedType,
+            quantity: 1,
+            category: item.categoria,
+            estado: selectedState || 'Normal',
+            local: selectedLocation || 'Não especificado'
+          }));
+          
+          // Apply sorting
+          const sortedResults = results.sort((a, b) => {
+            return sortOrder === 'asc' 
+              ? a.name.localeCompare(b.name) 
+              : b.name.localeCompare(a.name);
+          });
+          
+          setSearchResults(sortedResults);
+        } else {
+          setSearchResults([]);
+          toast({
+            title: "Nenhum item encontrado",
+            description: "Tente outro termo de busca ou filtros diferentes",
+          });
+        }
+      } else {
+        // Simulated results for testing
+        const mockResults = [
+          {
+            id: '1',
+            name: 'Capacete de Segurança',
+            code: 'EPI-001',
+            type: selectedType,
+            quantity: 1,
+            category: 'Proteção para cabeça',
+            estado: 'Novo',
+            local: 'Almoxarifado'
+          },
+          {
+            id: '2',
+            name: 'Luva de Proteção',
+            code: 'EPI-002',
+            type: selectedType,
+            quantity: 1,
+            category: 'Proteção para mãos',
+            estado: 'Novo',
+            local: 'Almoxarifado'
+          }
+        ];
+        
+        setSearchResults(mockResults);
+      }
+    } catch (error) {
+      console.error('Erro na busca:', error);
+      toast({
+        title: "Erro na busca",
+        description: "Não foi possível buscar os itens",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   // Adicionar item da busca ao fluxo
   const addItemFromSearch = (item: FlowItem) => {
     onAddItem({
       ...item,
-      quantity: itemQuantity
+      quantity: itemQuantity,
+      estado: selectedState || item.estado,
+      local: selectedLocation || item.local
     });
     setSearchResults([]);
     setSearchQuery('');
@@ -144,12 +411,25 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
 
   // Remover item
   const handleRemoveItem = (id: string) => {
-    // Aqui a lógica seria remover o item da lista
-    // No entanto, como estamos apenas simulando, não temos uma função de remoção real
-    toast({
-      title: "Item removido",
-      description: "O item foi removido da lista",
-    });
+    if (onRemoveItem) {
+      onRemoveItem(id);
+    } else {
+      // Default fallback if onRemoveItem is not provided
+      toast({
+        title: "Item removido",
+        description: "O item foi removido da lista",
+      });
+    }
+  };
+
+  // Toggle sort order
+  const toggleSortOrder = () => {
+    setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    setSearchResults(prev => [...prev].sort((a, b) => {
+      return sortOrder === 'desc' 
+        ? a.name.localeCompare(b.name) 
+        : b.name.localeCompare(a.name);
+    }));
   };
 
   return (
@@ -178,9 +458,24 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
 
       {/* Escaneamento de itens */}
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center flex-wrap gap-2">
           <h3 className="font-medium">Itens ({items.length})</h3>
+          
           <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <span className="text-sm text-gray-500">Tipo:</span>
+              <Select value={selectedType} onValueChange={setSelectedType}>
+                <SelectTrigger className="w-32 h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {types.map(type => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
             <div className="flex items-center gap-1">
               <span className="text-sm text-gray-500">Qtd:</span>
               <Input 
@@ -193,6 +488,70 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
             </div>
           </div>
         </div>
+        
+        {/* Filtros adicionais quando abertos */}
+        <AnimatePresence>
+          {(showCategories || showStates || showLocations) && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="grid grid-cols-1 sm:grid-cols-3 gap-3 overflow-hidden"
+            >
+              {showCategories && categories.length > 0 && (
+                <div>
+                  <span className="text-xs text-gray-500 mb-1 block">Categoria:</span>
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="w-full h-8">
+                      <SelectValue placeholder="Todas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Todas</SelectItem>
+                      {categories.map(category => (
+                        <SelectItem key={category} value={category}>{category}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              
+              {showStates && states.length > 0 && (
+                <div>
+                  <span className="text-xs text-gray-500 mb-1 block">Estado:</span>
+                  <Select value={selectedState} onValueChange={setSelectedState}>
+                    <SelectTrigger className="w-full h-8">
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Não especificado</SelectItem>
+                      {states.map(state => (
+                        <SelectItem key={state} value={state}>{state}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              
+              {showLocations && locations.length > 0 && (
+                <div>
+                  <span className="text-xs text-gray-500 mb-1 block">Local:</span>
+                  <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+                    <SelectTrigger className="w-full h-8">
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Não especificado</SelectItem>
+                      {locations.map(location => (
+                        <SelectItem key={location} value={location}>{location}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Button 
@@ -227,6 +586,25 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border rounded-md shadow-lg z-10 max-h-60 overflow-auto"
               >
+                <div className="p-2 border-b flex justify-between items-center">
+                  <span className="text-xs font-medium text-gray-500">
+                    {searchResults.length} resultados
+                  </span>
+                  <div className="flex gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7"
+                      onClick={toggleSortOrder}
+                    >
+                      {sortOrder === 'asc' ? (
+                        <SortAsc className="h-4 w-4" />
+                      ) : (
+                        <SortDesc className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
                 {searchResults.map((item) => (
                   <div 
                     key={item.id}
@@ -254,6 +632,7 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
               description="Posicione o QR Code do item na área de escaneamento"
               onScan={handleQRScan}
               onCancel={() => setScanActive(false)}
+              autoStartScanning={true}
             />
           </div>
         )}
@@ -280,7 +659,22 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
                       <p className="font-medium">{item.name}</p>
                       <Badge variant="outline">{item.type}</Badge>
                     </div>
-                    <p className="text-xs text-gray-500">Código: {item.code}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs text-gray-500">Código: {item.code}</p>
+                      {item.category && (
+                        <span className="text-xs text-gray-500">| Categoria: {item.category}</span>
+                      )}
+                    </div>
+                    {(item.estado || item.local) && (
+                      <div className="flex items-center gap-2">
+                        {item.estado && (
+                          <Badge variant="secondary" className="text-xs mt-1">{item.estado}</Badge>
+                        )}
+                        {item.local && (
+                          <Badge variant="outline" className="text-xs mt-1">{item.local}</Badge>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge>{item.quantity}</Badge>
@@ -315,8 +709,11 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
               id: `manual-${Date.now()}`,
               name: 'Item Adicionado Manualmente',
               code: `MANUAL-${Math.floor(Math.random() * 1000)}`,
-              type: 'Manual',
-              quantity: itemQuantity
+              type: selectedType,
+              quantity: itemQuantity,
+              category: selectedCategory || undefined,
+              estado: selectedState || undefined,
+              local: selectedLocation || undefined
             });
           }}
         >

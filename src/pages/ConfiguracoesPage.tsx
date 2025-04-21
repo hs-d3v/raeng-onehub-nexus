@@ -1,3 +1,4 @@
+
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,6 +14,7 @@ import CustomFields from '@/components/configuracoes/CustomFields';
 import IntegrationSettings from '@/components/configuracoes/IntegrationSettings';
 import SystemLogs from '@/components/configuracoes/SystemLogs';
 import PredefinedRegisters from '@/components/configuracoes/PredefinedRegisters';
+
 const ConfiguracoesPage = () => {
   return <MainLayout>
       <div className="container mx-auto py-6">
@@ -29,6 +31,7 @@ const ConfiguracoesPage = () => {
             <TabsTrigger value="logs">Logs do Sistema</TabsTrigger>
             <TabsTrigger value="notificacoes">Notificações</TabsTrigger>
             <TabsTrigger value="aparencia">Aparência</TabsTrigger>
+            <TabsTrigger value="qrcode">QR Code & Biometria</TabsTrigger>
           </TabsList>
           
           <TabsContent value="geral">
@@ -330,8 +333,159 @@ const ConfiguracoesPage = () => {
               </Card>
             </div>
           </TabsContent>
+
+          <TabsContent value="qrcode">
+            <div className="grid gap-6 md:grid-cols-2 py-[32px]">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Configurações de QR Code</CardTitle>
+                  <CardDescription>
+                    Personalize as opções de geração e leitura de QR Code
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="qr-correction-level">Nível de Correção de Erros</Label>
+                    <Select defaultValue="H">
+                      <SelectTrigger id="qr-correction-level">
+                        <SelectValue placeholder="Selecione o nível de correção" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="L">Baixo (7%)</SelectItem>
+                        <SelectItem value="M">Médio (15%)</SelectItem>
+                        <SelectItem value="Q">Quartil (25%)</SelectItem>
+                        <SelectItem value="H">Alto (30%)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-500">
+                      Níveis mais altos fornecem maior tolerância a danos, mas geram códigos mais densos.
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="qr-format">Formato da Codificação</Label>
+                    <Select defaultValue="json">
+                      <SelectTrigger id="qr-format">
+                        <SelectValue placeholder="Selecione o formato" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="json">JSON (Estruturado)</SelectItem>
+                        <SelectItem value="encrypted">JSON Criptografado</SelectItem>
+                        <SelectItem value="plain">Texto Simples</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Incluir Timestamp</Label>
+                      <p className="text-sm text-gray-500">Adicionar data/hora de geração no QR</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Incluir Logo</Label>
+                      <p className="text-sm text-gray-500">Inserir logo da empresa no centro do QR</p>
+                    </div>
+                    <Switch />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>QR Code Dinâmico</Label>
+                      <p className="text-sm text-gray-500">Permitir atualização remota do conteúdo</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  
+                  <Button className="w-full">Salvar Configurações</Button>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Configurações de Biometria</CardTitle>
+                  <CardDescription>
+                    Configure as opções de reconhecimento facial e digital
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="facial-confidence">Sensibilidade do Reconhecimento Facial</Label>
+                    <Select defaultValue="medium">
+                      <SelectTrigger id="facial-confidence">
+                        <SelectValue placeholder="Selecione a sensibilidade" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Baixa (Mais inclusivo, menos seguro)</SelectItem>
+                        <SelectItem value="medium">Média (Balanceado)</SelectItem>
+                        <SelectItem value="high">Alta (Mais restritivo, mais seguro)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="digital-quality">Qualidade da Impressão Digital</Label>
+                    <Select defaultValue="medium">
+                      <SelectTrigger id="digital-quality">
+                        <SelectValue placeholder="Selecione a qualidade" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Baixa (Maior aceitação)</SelectItem>
+                        <SelectItem value="medium">Média (Balanceado)</SelectItem>
+                        <SelectItem value="high">Alta (Maior precisão)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Verificação de vida</Label>
+                      <p className="text-sm text-gray-500">Detectar se é um rosto real vs. foto</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Autenticação de Dois Fatores</Label>
+                      <p className="text-sm text-gray-500">Exigir QR + biometria para acesso crítico</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Registro de Presença</Label>
+                      <p className="text-sm text-gray-500">Usar biometria para registrar ponto</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  
+                  <div className="space-y-2 pt-2">
+                    <Label htmlFor="biometric-models">Modelos Biométricos</Label>
+                    <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-md">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-medium">Reconhecimento Facial</span>
+                        <Badge variant="outline" className="bg-green-100 text-green-800">Instalado</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">Impressão Digital</span>
+                        <Badge variant="outline" className="bg-green-100 text-green-800">Instalado</Badge>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Button className="w-full">Salvar Configurações</Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
     </MainLayout>;
 };
+
 export default ConfiguracoesPage;

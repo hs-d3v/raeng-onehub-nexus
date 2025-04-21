@@ -1,12 +1,17 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, QrCode, Printer, Camera, RefreshCw, CheckCircle } from 'lucide-react';
+import { Download, QrCode, Printer, Camera, RefreshCw, CheckCircle, Share2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import QRCode from 'qrcode.react';
+import { generateQRData, QR_CONFIG } from '@/config/qr-config';
+import { motion } from 'framer-motion';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 interface CrachaInteligenteProps {
   colaborador?: any;
@@ -16,6 +21,17 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
   const { toast } = useToast();
   const [qrGerado, setQrGerado] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [qrData, setQrData] = useState<string>('');
+  const [isDownloading, setIsDownloading] = useState(false);
+  const crachaRef = React.useRef<HTMLDivElement>(null);
+
+  // Check if QR code exists when component loads
+  useEffect(() => {
+    if (colaborador?.id && colaborador?.cracha_hash) {
+      setQrGerado(true);
+      setQrData(colaborador.cracha_hash);
+    }
+  }, [colaborador]);
 
   const gerarQRCode = async () => {
     if (!colaborador.id) {
@@ -29,20 +45,141 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
 
     setLoading(true);
 
-    // Simular geração de QR Code
-    setTimeout(() => {
+    try {
+      // Generate unique QR data for the employee
+      const timestamp = Date.now();
+      const randomSuffix = Math.random().toString(36).substring(2, 8);
+      const qrHashBase = generateQRData('employee', colaborador.id, {
+        nome: colaborador.nome,
+        matricula: colaborador.matricula,
+        timestamp,
+        random: randomSuffix
+      });
+
+      // Save the QR hash to the database
+      const { data, error } = await supabase
+        .from('colaboradores')
+        .update({ cracha_hash: qrHashBase })
+        .eq('id', colaborador.id)
+        .select();
+
+      if (error) {
+        throw error;
+      }
+
+      setQrData(qrHashBase);
       setQrGerado(true);
-      setLoading(false);
       toast({
         title: "QR Code gerado",
         description: "QR Code gerado com sucesso",
       });
-    }, 1500);
+    } catch (error) {
+      console.error('Erro ao gerar QR Code:', error);
+      toast({
+        title: "Erro ao gerar QR Code",
+        description: "Não foi possível gerar o QR Code. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // Em uma implementação real:
-    // 1. Gerar um hash único para o crachá
-    // 2. Salvar o hash no registro do colaborador
-    // 3. Gerar o QR Code com este hash
+  const handleDownloadPDF = async () => {
+    if (!crachaRef.current) return;
+
+    setIsDownloading(true);
+    try {
+      // Add a class to prepare for download (can apply specific styles)
+      crachaRef.current.classList.add('downloading');
+      
+      // Capture the badge image with html2canvas
+      const canvas = await html2canvas(crachaRef.current, {
+        scale: 2, // Higher resolution
+        useCORS: true, // Allow cross-origin images
+        allowTaint: true,
+      });
+      
+      // Remove download class
+      crachaRef.current.classList.remove('downloading');
+      
+      // Calculate dimensions for PDF
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: [85, 130], // Standard ID card size (adjust as needed)
+      });
+      
+      // Add image to PDF - calculate sizing to fit properly
+      const imgWidth = 70;
+      const imgHeight = 110;
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const marginX = (pageWidth - imgWidth) / 2;
+      const marginY = (pageHeight - imgHeight) / 2;
+      
+      pdf.addImage(imgData, 'PNG', marginX, marginY, imgWidth, imgHeight);
+      
+      // Save the PDF with the employee name
+      const fileName = `cracha_${colaborador.nome?.replace(/\s+/g, '_').toLowerCase() || 'colaborador'}.pdf`;
+      pdf.save(fileName);
+      
+      toast({
+        title: "Crachá baixado",
+        description: `O crachá foi salvo como ${fileName}`,
+      });
+    } catch (error) {
+      console.error('Erro ao baixar crachá:', error);
+      toast({
+        title: "Erro ao fazer download",
+        description: "Não foi possível gerar o PDF do crachá.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handlePrint = () => {
+    if (!crachaRef.current) return;
+    
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast({
+        title: "Erro ao imprimir",
+        description: "Não foi possível abrir a janela de impressão. Verifique se os pop-ups estão permitidos.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Prepare print document
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Crachá - ${colaborador.nome || 'Colaborador'}</title>
+          <style>
+            body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+            .print-container { width: 85mm; height: 130mm; overflow: hidden; }
+            @media print {
+              @page { size: 85mm 130mm; margin: 0; }
+              .print-container { page-break-inside: avoid; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-container">
+            ${crachaRef.current.outerHTML}
+          </div>
+          <script>
+            window.onload = function() { window.print(); window.close(); };
+          </script>
+        </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
   };
 
   return (
@@ -54,9 +191,12 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Visualização do crachá */}
           <div className="flex flex-col items-center">
-            <div className="relative w-full max-w-[250px] bg-white border rounded-lg overflow-hidden shadow-lg">
+            <div 
+              ref={crachaRef} 
+              className="relative w-full max-w-[250px] bg-white border rounded-lg overflow-hidden shadow-lg"
+            >
               {/* Cabeçalho do crachá */}
-              <div className="bg-brand-blue p-3 text-white text-center">
+              <div className="bg-gradient-to-r from-brand-blue to-brand-blue-dark p-3 text-white text-center">
                 <h3 className="text-lg font-bold">RAENG</h3>
                 <p className="text-xs">CONSTRUÇÃO E ENGENHARIA</p>
               </div>
@@ -64,8 +204,10 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
               {/* Corpo do crachá */}
               <div className="p-4 flex flex-col items-center">
                 <Avatar className="w-24 h-24 border-2 border-brand-blue">
-                  <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback className="text-xl">{colaborador.nome?.substring(0, 2).toUpperCase() || 'CO'}</AvatarFallback>
+                  <AvatarImage src={colaborador.foto_url || "/placeholder.svg"} />
+                  <AvatarFallback className="text-xl bg-brand-blue/10">
+                    {colaborador.nome?.substring(0, 2).toUpperCase() || 'CO'}
+                  </AvatarFallback>
                 </Avatar>
                 
                 <div className="mt-3 text-center">
@@ -78,12 +220,30 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
                   
                   <div className="w-32 h-32 mx-auto bg-gray-100 rounded flex items-center justify-center mb-2">
                     {qrGerado ? (
-                      <div className="relative">
-                        <QrCode className="h-24 w-24 text-brand-blue" />
-                        <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
+                      <motion.div 
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                        className="relative"
+                      >
+                        <QRCode 
+                          value={qrData} 
+                          size={120} 
+                          level={QR_CONFIG.generation.errorCorrectionLevel}
+                          renderAs="svg"
+                          includeMargin={true}
+                          bgColor={QR_CONFIG.generation.color.light}
+                          fgColor={QR_CONFIG.generation.color.dark}
+                        />
+                        <motion.div 
+                          className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: 0.3 }}
+                        >
                           <CheckCircle className="h-4 w-4 text-white" />
-                        </div>
-                      </div>
+                        </motion.div>
+                      </motion.div>
                     ) : (
                       <>
                         <QrCode className="h-12 w-12 text-gray-300" />
@@ -106,11 +266,46 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
             </div>
             
             <div className="mt-6 flex gap-2 justify-center">
-              <Button variant="outline" size="sm" className="text-xs" disabled={!qrGerado}>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs" 
+                disabled={!qrGerado || isDownloading} 
+                onClick={handlePrint}
+              >
                 <Printer className="h-4 w-4 mr-2" /> Imprimir
               </Button>
-              <Button variant="outline" size="sm" className="text-xs" disabled={!qrGerado}>
-                <Download className="h-4 w-4 mr-2" /> Exportar PDF
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs" 
+                disabled={!qrGerado || isDownloading}
+                onClick={handleDownloadPDF}
+              >
+                <Download className="h-4 w-4 mr-2" /> 
+                {isDownloading ? 'Gerando...' : 'Exportar PDF'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                disabled={!qrGerado}
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({
+                      title: `Crachá - ${colaborador.nome || 'Colaborador'}`,
+                      text: 'Crachá digital do colaborador'
+                    }).catch(err => console.log('Erro ao compartilhar:', err));
+                  } else {
+                    toast({
+                      title: "Compartilhamento não suportado",
+                      description: "Seu navegador não suporta a API de compartilhamento.",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              >
+                <Share2 className="h-4 w-4 mr-2" /> Compartilhar
               </Button>
             </div>
           </div>
@@ -173,7 +368,7 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
                 
                 {qrGerado ? (
                   <Button variant="outline" onClick={() => gerarQRCode()} disabled={loading}>
-                    <RefreshCw className="h-4 w-4 mr-2" />
+                    <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                     {loading ? "Processando..." : "Renovar QR Code"}
                   </Button>
                 ) : (
