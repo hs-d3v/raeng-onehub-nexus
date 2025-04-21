@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import DataTable from '@/components/ui/DataTable';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { format } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +21,19 @@ const SaudeOcupacional: React.FC<SaudeOcupacionalProps> = ({ colaboradorId }) =>
   const [date, setDate] = useState<Date>();
   const [proximosExames, setProximosExames] = useState<any[]>([]);
   const [historicoExames, setHistoricoExames] = useState<any[]>([]);
+
+  // Helper function to safely format dates
+  const safeFormatDate = (dateStr: string | null | undefined): string => {
+    if (!dateStr) return 'N/A';
+    try {
+      const date = parseISO(dateStr);
+      if (!isValid(date)) return 'Data inválida';
+      return format(date, 'dd/MM/yyyy');
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Data inválida';
+    }
+  };
 
   useEffect(() => {
     if (colaboradorId) {
@@ -104,7 +117,9 @@ const SaudeOcupacional: React.FC<SaudeOcupacionalProps> = ({ colaboradorId }) =>
     { 
       header: 'Data Programada', 
       accessorKey: 'data_programada',
-      cell: (value: string) => format(new Date(value), 'dd/MM/yyyy')
+      cell: ({ row }: { row: { original: any } }) => {
+        return safeFormatDate(row.original.data_programada);
+      }
     },
     { 
       header: 'Médico', 
@@ -117,7 +132,10 @@ const SaudeOcupacional: React.FC<SaudeOcupacionalProps> = ({ colaboradorId }) =>
     { 
       header: 'Status', 
       accessorKey: 'status',
-      cell: (value: string) => {
+      cell: ({ row }: { row: { original: any } }) => {
+        const value = row.original.status;
+        if (!value) return null;
+        
         let badgeClass = "";
         let icon = null;
         
@@ -153,7 +171,7 @@ const SaudeOcupacional: React.FC<SaudeOcupacionalProps> = ({ colaboradorId }) =>
     { 
       header: 'Ações', 
       accessorKey: 'acoes',
-      cell: (row: any) => (
+      cell: ({ row }: { row: { original: any } }) => (
         <div className="flex gap-2">
           <Popover>
             <PopoverTrigger asChild>
@@ -204,7 +222,9 @@ const SaudeOcupacional: React.FC<SaudeOcupacionalProps> = ({ colaboradorId }) =>
     { 
       header: 'Data Realização', 
       accessorKey: 'data_realizacao',
-      cell: (value: string) => format(new Date(value), 'dd/MM/yyyy')
+      cell: ({ row }: { row: { original: any } }) => {
+        return safeFormatDate(row.original.data_realizacao);
+      }
     },
     { 
       header: 'Médico', 
@@ -217,7 +237,10 @@ const SaudeOcupacional: React.FC<SaudeOcupacionalProps> = ({ colaboradorId }) =>
     { 
       header: 'Resultado', 
       accessorKey: 'resultado',
-      cell: (value: string) => {
+      cell: ({ row }: { row: { original: any } }) => {
+        const value = row.original.resultado;
+        if (!value) return null;
+        
         let badgeClass = "";
         let icon = null;
         
@@ -257,7 +280,7 @@ const SaudeOcupacional: React.FC<SaudeOcupacionalProps> = ({ colaboradorId }) =>
     { 
       header: 'Ações', 
       accessorKey: 'acoes',
-      cell: (row: any) => (
+      cell: ({ row }: { row: { original: any } }) => (
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="text-xs h-8">
             Ver Resultado

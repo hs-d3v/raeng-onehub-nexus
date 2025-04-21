@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ChevronLeft, ChevronRight, Search, SlidersHorizontal } from 'lucide-react';
 
-interface Column {
+export interface Column {
   header: string;
   accessorKey: string;
   cell?: (info: { row: { original: any } }) => React.ReactNode;
@@ -62,6 +62,20 @@ const DataTable: React.FC<DataTableProps> = ({
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
+
+  // Safe cell renderer function
+  const renderCell = (column: Column, row: any) => {
+    try {
+      if (column.cell) {
+        return column.cell({ row: { original: row } });
+      } else {
+        return row[column.accessorKey];
+      }
+    } catch (error) {
+      console.error(`Error rendering cell for column ${column.header}:`, error);
+      return 'Error displaying data';
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -125,9 +139,7 @@ const DataTable: React.FC<DataTableProps> = ({
                 <TableRow key={rowIndex}>
                   {columns.map((column) => (
                     <TableCell key={column.accessorKey}>
-                      {column.cell 
-                        ? column.cell({ row: { original: row } })
-                        : row[column.accessorKey]}
+                      {renderCell(column, row)}
                     </TableCell>
                   ))}
                 </TableRow>
