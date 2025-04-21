@@ -4,7 +4,7 @@
 export const QR_CONFIG = {
   // QR Code generation settings
   generation: {
-    errorCorrectionLevel: 'H', // High - allows recovery of up to 30% of data
+    errorCorrectionLevel: 'H' as 'L' | 'M' | 'Q' | 'H', // Type assertion to valid QR error correction levels
     margin: 1,
     scale: 8,
     color: {

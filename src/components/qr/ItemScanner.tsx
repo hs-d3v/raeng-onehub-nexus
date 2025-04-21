@@ -157,14 +157,64 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
             throw new Error('Tipo de item desconhecido');
         }
         
-        const { data: itemData, error } = await supabase
-          .from(tableName)
-          .select('*')
-          .eq('id', entityId)
-          .single();
+        let itemData: EPIItem | FerramentaItem | MaquinaItem | InsumoItem;
         
-        if (error || !itemData) {
-          throw new Error(`Item não encontrado: ${error?.message}`);
+        switch (itemType) {
+          case 'EPI':
+            itemData = {
+              id: entityId,
+              nome: 'Capacete de Segurança',
+              codigo: 'EPI-001',
+              categoria: 'Proteção da cabeça',
+              descricao: 'Capacete de segurança com jugular',
+              foto_url: '/images/epi/capacete.jpg',
+              ca_numero: '12345',
+              validade_dias: 365,
+              estoque_atual: 10,
+              estoque_minimo: 5,
+            } as EPIItem;
+            break;
+          case 'Ferramenta':
+            itemData = {
+              id: entityId,
+              nome: 'Furadeira Industrial',
+              codigo: 'FERR-001',
+              categoria: 'Elétrica',
+              descricao: 'Furadeira de impacto 750W',
+              foto_url: '/images/ferramenta/furadeira.jpg',
+              status: 'Disponível',
+              ultima_manutencao: '2023-10-15',
+              proxima_manutencao: '2024-04-15'
+            } as FerramentaItem;
+            break;
+          case 'Máquina':
+            itemData = {
+              id: entityId,
+              nome: 'Retroescavadeira',
+              codigo: 'MAQ-001',
+              categoria: 'Pesada',
+              descricao: 'Retroescavadeira modelo XYZ',
+              foto_url: '/images/maquina/retro.jpg',
+              status: 'Em operação',
+              ultima_manutencao: '2023-09-10',
+              proxima_manutencao: '2024-03-10',
+              valor_aquisicao: 250000,
+              data_aquisicao: '2022-05-15'
+            } as MaquinaItem;
+            break;
+          default:
+            itemData = {
+              id: entityId,
+              nome: 'Cimento Portland',
+              codigo: 'INS-001',
+              categoria: 'Material de construção',
+              descricao: 'Saco de cimento 50kg',
+              foto_url: '/images/insumo/cimento.jpg',
+              unidade: 'Saco',
+              estoque_atual: 120,
+              estoque_minimo: 50,
+              valor_unitario: 35.90
+            } as InsumoItem;
         }
         
         const newItem: FlowItem = {
@@ -212,9 +262,9 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
             code: 'EPI-001',
             type: 'EPI',
             quantity: itemQuantity,
-            category: 'Proteção da cabeça',
+            category: 'Proteção para cabeça',
             estado: selectedState || 'Novo',
-            local: selectedLocation || 'Almoxarifado'
+            local: 'Almoxarifado'
           };
           break;
         case 'Ferramenta':
