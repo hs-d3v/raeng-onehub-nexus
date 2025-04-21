@@ -4,6 +4,8 @@ import StatsCard from '@/components/widgets/StatsCard';
 import BarChart from '@/components/charts/BarChart';
 import DataTable, { Column } from '@/components/ui/DataTable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { 
   Users, 
   FileText, 
@@ -47,8 +49,11 @@ const DashboardPage = () => {
   ];
   
   const alertasColumns = [
-    { header: 'Tipo', accessorKey: 'tipo', 
-      cell: (value: string) => {
+    { 
+      header: 'Tipo', 
+      accessorKey: 'tipo',
+      cell: ({ row }) => {
+        const value = row.original.tipo;
         const iconProps = { className: "h-4 w-4 mr-2" };
         let icon;
         let badgeClass = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ";
@@ -80,8 +85,11 @@ const DashboardPage = () => {
       }
     },
     { header: 'Descrição', accessorKey: 'descricao' },
-    { header: 'Prioridade', accessorKey: 'prioridade',
-      cell: (value: string) => {
+    { 
+      header: 'Prioridade', 
+      accessorKey: 'prioridade',
+      cell: ({ row }) => {
+        const value = row.original.prioridade;
         let badgeClass = "px-2.5 py-0.5 rounded-full text-xs font-medium ";
         
         switch(value) {
@@ -104,39 +112,6 @@ const DashboardPage = () => {
     { header: 'Vencimento', accessorKey: 'vencimento' },
   ];
   
-  const alertasData = [
-    { 
-      tipo: 'Contrato', 
-      descricao: 'Contrato #1234 - Manutenção SPCI - Vencimento próximo', 
-      prioridade: 'Alta',
-      vencimento: '15/07/2023' 
-    },
-    { 
-      tipo: 'EPI', 
-      descricao: 'Lote de capacetes próximos da validade', 
-      prioridade: 'Média',
-      vencimento: '30/07/2023' 
-    },
-    { 
-      tipo: 'Manutenção', 
-      descricao: 'Retroescavadeira - Manutenção preventiva agendada', 
-      prioridade: 'Média',
-      vencimento: '05/08/2023' 
-    },
-    { 
-      tipo: 'Contrato', 
-      descricao: 'Contrato #2567 - Inspeção elétrica - Renovação', 
-      prioridade: 'Alta',
-      vencimento: '10/08/2023' 
-    },
-    { 
-      tipo: 'EPI', 
-      descricao: 'Estoque de luvas anti-corte abaixo do mínimo', 
-      prioridade: 'Baixa',
-      vencimento: '18/08/2023' 
-    },
-  ];
-
   const proximosVencimentosColumns: Column[] = [
     { 
       header: 'Tipo', 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, AlertTriangle, CheckCircle, LucideCalendarClock, PlusCircle } from 'lucide-react';
+import { Calendar, Clock, AlertTriangle, CheckCircle, LucideCalendarClock, PlusCircle, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import DataTable, { Column } from '@/components/ui/DataTable';
 import { safeFormatDate } from '@/utils/dateUtils';
@@ -28,20 +28,17 @@ const ControleJornadaFerias: React.FC<ControleJornadaFeriasProps> = ({ colaborad
 
   useEffect(() => {
     if (colaboradorId) {
-      // Simular dados para exibição (em uma aplicação real, buscaríamos do banco)
       const hoje = new Date();
       
       const pontosData = Array(30).fill(null).map((_, index) => {
         const data = new Date();
         data.setDate(data.getDate() - index);
         
-        // Gerar horários aleatórios para simular registros de ponto
         const horaEntrada = `0${Math.floor(Math.random() * 2) + 7}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`;
         const horaSaidaAlmoco = `12:${Math.floor(Math.random() * 30).toString().padStart(2, '0')}`;
         const horaRetornoAlmoco = `13:${Math.floor(Math.random() * 30).toString().padStart(2, '0')}`;
         const horaSaida = `1${Math.floor(Math.random() * 2) + 7}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`;
         
-        // Fins de semana sem ponto
         const diaSemana = data.getDay();
         if (diaSemana === 0 || diaSemana === 6) {
           return {
@@ -57,7 +54,6 @@ const ControleJornadaFerias: React.FC<ControleJornadaFeriasProps> = ({ colaborad
           };
         }
         
-        // Gerar algumas ausências e atrasos aleatoriamente
         const random = Math.random();
         if (random > 0.9) {
           return {
@@ -174,7 +170,6 @@ const ControleJornadaFerias: React.FC<ControleJornadaFeriasProps> = ({ colaborad
         }
       ];
       
-      // Gerar histórico de banco de horas
       const bancoHorasData = {
         saldo: 12.5,
         historico: Array(20).fill(null).map((_, index) => {
@@ -191,12 +186,11 @@ const ControleJornadaFerias: React.FC<ControleJornadaFeriasProps> = ({ colaborad
             horas: tipo === 'crédito' ? horas : `-${horas}`,
             motivo: tipo === 'crédito' ? 'Hora extra' : 'Saída antecipada',
             autorizado_por: 'Supervisor',
-            saldo_resultante: '00.0' // Placeholder, calculado depois
+            saldo_resultante: '00.0'
           };
         })
       };
       
-      // Calcular saldos acumulados
       let saldoAcumulado = bancoHorasData.saldo;
       bancoHorasData.historico = bancoHorasData.historico.map(item => {
         saldoAcumulado -= parseFloat(item.horas);
@@ -434,6 +428,70 @@ const ControleJornadaFerias: React.FC<ControleJornadaFeriasProps> = ({ colaborad
     }
   ];
 
+  const ausenciasColumns: Column[] = [
+    { 
+      header: 'Tipo', 
+      accessorKey: 'tipo',
+      cell: ({ row }) => row.original.tipo
+    },
+    { 
+      header: 'Data início', 
+      accessorKey: 'data_inicio',
+      cell: ({ row }) => safeFormatDate(row.original.data_inicio)
+    },
+    { 
+      header: 'Data fim', 
+      accessorKey: 'data_fim',
+      cell: ({ row }) => safeFormatDate(row.original.data_fim)
+    },
+    { 
+      header: 'Total dias', 
+      accessorKey: 'total_dias',
+      cell: ({ row }) => row.original.total_dias
+    },
+    { 
+      header: 'Motivo', 
+      accessorKey: 'motivo'
+    },
+    { 
+      header: 'Status', 
+      accessorKey: 'status',
+      cell: ({ row }) => {
+        const value = row.original.status;
+        if (!value) return null;
+        
+        let badgeClass = "";
+        switch(value) {
+          case 'justificada':
+            badgeClass = "bg-green-100 text-green-800";
+            break;
+          case 'injustificada':
+            badgeClass = "bg-red-100 text-red-800";
+            break;
+          default:
+            badgeClass = "bg-gray-100 text-gray-800";
+        }
+        
+        return <Badge className={badgeClass}>{value.charAt(0).toUpperCase() + value.slice(1)}</Badge>;
+      }
+    },
+    { 
+      header: 'Ações', 
+      accessorKey: 'acoes',
+      cell: ({ row }) => (
+        <Button variant="outline" size="sm" className="text-xs h-8">
+          {row.original.documento_url ? (
+            <a href={row.original.documento_url} target="_blank" rel="noopener noreferrer">
+              <FileText className="h-4 w-4 mr-2" /> Documento
+            </a>
+          ) : (
+            "Sem documento"
+          )}
+        </Button>
+      )
+    }
+  ];
+
   return (
     <Card>
       <CardHeader>
@@ -477,7 +535,6 @@ const ControleJornadaFerias: React.FC<ControleJornadaFeriasProps> = ({ colaborad
                   <span>Taxa de Presença</span>
                   <span className="font-medium">96%</span>
                 </div>
-                {/* Replace with actual data */}
                 <Progress value={96} className="h-2" />
               </div>
               <div>
@@ -485,7 +542,6 @@ const ControleJornadaFerias: React.FC<ControleJornadaFeriasProps> = ({ colaborad
                   <span>Pontualidade</span>
                   <span className="font-medium">92%</span>
                 </div>
-                {/* Replace with actual data */}
                 <Progress value={92} className="h-2" />
               </div>
             </div>
