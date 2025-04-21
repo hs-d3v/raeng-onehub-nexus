@@ -9,6 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import TermEditor from '@/components/configuracoes/TermEditor';
+import UserManagement from '@/components/configuracoes/UserManagement';
+import CustomFields from '@/components/configuracoes/CustomFields';
+import IntegrationSettings from '@/components/configuracoes/IntegrationSettings';
+import SystemLogs from '@/components/configuracoes/SystemLogs';
+import PredefinedRegisters from '@/components/configuracoes/PredefinedRegisters';
 
 const ConfiguracoesPage = () => {
   return (
@@ -17,11 +22,16 @@ const ConfiguracoesPage = () => {
         <h1 className="text-2xl font-bold mb-6">Configurações do Sistema</h1>
         
         <Tabs defaultValue="geral">
-          <TabsList className="mb-6">
+          <TabsList className="mb-6 flex flex-wrap">
             <TabsTrigger value="geral">Geral</TabsTrigger>
+            <TabsTrigger value="usuarios">Usuários</TabsTrigger>
+            <TabsTrigger value="personalizacoes">Personalizações</TabsTrigger>
+            <TabsTrigger value="integracoes">Integrações</TabsTrigger>
+            <TabsTrigger value="termos">Termos Digitais</TabsTrigger>
+            <TabsTrigger value="cadastros">Cadastros Pré-definidos</TabsTrigger>
+            <TabsTrigger value="logs">Logs do Sistema</TabsTrigger>
             <TabsTrigger value="notificacoes">Notificações</TabsTrigger>
             <TabsTrigger value="aparencia">Aparência</TabsTrigger>
-            <TabsTrigger value="termos">Termos Digitais</TabsTrigger>
           </TabsList>
           
           <TabsContent value="geral">
@@ -125,6 +135,30 @@ const ConfiguracoesPage = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+          
+          <TabsContent value="usuarios">
+            <UserManagement />
+          </TabsContent>
+          
+          <TabsContent value="personalizacoes">
+            <CustomFields />
+          </TabsContent>
+          
+          <TabsContent value="integracoes">
+            <IntegrationSettings />
+          </TabsContent>
+          
+          <TabsContent value="termos">
+            <TermEditor />
+          </TabsContent>
+          
+          <TabsContent value="cadastros">
+            <PredefinedRegisters />
+          </TabsContent>
+          
+          <TabsContent value="logs">
+            <SystemLogs />
           </TabsContent>
           
           <TabsContent value="notificacoes">
@@ -298,10 +332,6 @@ const ConfiguracoesPage = () => {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-          
-          <TabsContent value="termos">
-            <TermEditor />
           </TabsContent>
         </Tabs>
       </div>
