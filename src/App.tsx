@@ -15,6 +15,7 @@ const DashboardPage = lazy(() => import("./components/dashboard/DashboardPage"))
 const ChatPage = lazy(() => import("./pages/ChatPage"));
 const ContratosPage = lazy(() => import("./pages/ContratosPage"));
 const ColaboradoresPage = lazy(() => import("./pages/ColaboradoresPage"));
+const DetalhesColaborador = lazy(() => import("./components/colaboradores/DetalhesColaborador"));
 const EPIsPage = lazy(() => import("./pages/EPIsPage"));
 const FerramentasPage = lazy(() => import("./pages/FerramentasPage"));
 const MaquinasPage = lazy(() => import("./pages/MaquinasPage"));
@@ -55,6 +56,7 @@ const AppContent = () => {
                 <Route path="/chat" element={<ChatPage />} />
                 <Route path="/contratos" element={<ContratosPage />} />
                 <Route path="/colaboradores" element={<ColaboradoresPage />} />
+                <Route path="/colaboradores/:id" element={<DetalhesColaborador />} />
                 <Route path="/epis" element={<EPIsPage />} />
                 <Route path="/ferramentas" element={<FerramentasPage />} />
                 <Route path="/maquinas" element={<MaquinasPage />} />
