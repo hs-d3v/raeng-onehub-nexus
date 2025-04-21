@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -190,18 +191,18 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
               
               <div className="p-4 flex flex-col items-center">
                 <Avatar className="w-24 h-24 border-2 border-brand-blue">
-                  <AvatarImage src={colaborador.foto_url || "/placeholder.svg"} />
+                  <AvatarImage src={colaborador?.foto_url || "/placeholder.svg"} />
                   <AvatarFallback className="text-xl bg-brand-blue/10">
-                    {colaborador.nome?.substring(0, 2).toUpperCase() || 'CO'}
+                    {colaborador?.nome?.substring(0, 2).toUpperCase() || 'CO'}
                   </AvatarFallback>
                 </Avatar>
                 
                 <div className="mt-3 text-center">
-                  <h4 className="font-bold text-lg">{colaborador.nome || 'Nome do Colaborador'}</h4>
-                  <p className="text-sm text-gray-600">{colaborador.cargo || 'Cargo do Colaborador'}</p>
+                  <h4 className="font-bold text-lg">{colaborador?.nome || 'Nome do Colaborador'}</h4>
+                  <p className="text-sm text-gray-600">{colaborador?.cargo || 'Cargo do Colaborador'}</p>
                   
                   <div className="mt-3 mb-3">
-                    <Badge className="bg-brand-blue">{colaborador.matricula || 'MAT: 0001'}</Badge>
+                    <Badge className="bg-brand-blue">{colaborador?.matricula || 'MAT: 0001'}</Badge>
                   </div>
                   
                   <div className="w-32 h-32 mx-auto bg-gray-100 rounded flex items-center justify-center mb-2">
@@ -214,7 +215,7 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
                       >
                         <QRCodeSVG 
                           value={qrData} 
-                          size={120} 
+                          size={120}
                           level={QR_CONFIG.generation.errorCorrectionLevel}
                           bgColor={QR_CONFIG.generation.color.light}
                           fgColor={QR_CONFIG.generation.color.dark}
@@ -238,7 +239,7 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
                   </div>
                   
                   <div className="mt-2 text-xs text-gray-500">
-                    {colaborador.empresa || 'RAENG Construção e Engenharia'}
+                    {colaborador?.empresa || 'RAENG Construção e Engenharia'}
                   </div>
                 </div>
               </div>
@@ -277,7 +278,7 @@ const CrachaInteligente: React.FC<CrachaInteligenteProps> = ({ colaborador = {} 
                 onClick={() => {
                   if (navigator.share) {
                     navigator.share({
-                      title: `Crachá - ${colaborador.nome || 'Colaborador'}`,
+                      title: `Crachá - ${colaborador?.nome || 'Colaborador'}`,
                       text: 'Crachá digital do colaborador'
                     }).catch(err => console.log('Erro ao compartilhar:', err));
                   } else {

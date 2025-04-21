@@ -1,3 +1,4 @@
+
 /**
  * Configuration settings for QR Code functionality throughout the application
  */
