@@ -1,4 +1,3 @@
-
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,10 +13,8 @@ import CustomFields from '@/components/configuracoes/CustomFields';
 import IntegrationSettings from '@/components/configuracoes/IntegrationSettings';
 import SystemLogs from '@/components/configuracoes/SystemLogs';
 import PredefinedRegisters from '@/components/configuracoes/PredefinedRegisters';
-
 const ConfiguracoesPage = () => {
-  return (
-    <MainLayout>
+  return <MainLayout>
       <div className="container mx-auto py-6">
         <h1 className="text-2xl font-bold mb-6">Configurações do Sistema</h1>
         
@@ -218,7 +215,7 @@ const ConfiguracoesPage = () => {
           </TabsContent>
           
           <TabsContent value="aparencia">
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2 py-[32px]">
               <Card>
                 <CardHeader>
                   <CardTitle>Tema e Aparência</CardTitle>
@@ -335,8 +332,6 @@ const ConfiguracoesPage = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
-  );
+    </MainLayout>;
 };
-
 export default ConfiguracoesPage;
