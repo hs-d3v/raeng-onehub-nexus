@@ -138,7 +138,7 @@ const ColaboradoresPage = () => {
     { 
       header: 'Colaborador', 
       accessorKey: 'colaborador',
-      cell: (value: any, row: any) => {
+      cell: ({ row }) => {
         if (!row || !row.original) return null;
         
         const colaborador = row.original;
@@ -160,7 +160,10 @@ const ColaboradoresPage = () => {
     { 
       header: 'Departamento', 
       accessorKey: 'departamento',
-      cell: (value: string) => {
+      cell: ({ row }) => {
+        if (!row || !row.original) return null;
+        
+        const value = row.original.departamento;
         if (!value) return null;
         
         let color;
@@ -186,12 +189,18 @@ const ColaboradoresPage = () => {
     { 
       header: 'Admissão', 
       accessorKey: 'data_admissao',
-      cell: (value: string) => value ? new Date(value).toLocaleDateString('pt-BR') : 'N/A'
+      cell: ({ row }) => {
+        if (!row || !row.original) return null;
+        const value = row.original.data_admissao;
+        return value ? new Date(value).toLocaleDateString('pt-BR') : 'N/A';
+      }
     },
     { 
       header: 'Status', 
       accessorKey: 'status',
-      cell: (value: string) => {
+      cell: ({ row }) => {
+        if (!row || !row.original) return null;
+        const value = row.original.status;
         if (!value) return null;
         
         let badgeClass = "";
@@ -217,7 +226,9 @@ const ColaboradoresPage = () => {
     { 
       header: 'Próx. ASO', 
       accessorKey: 'proxAso',
-      cell: (value: string) => {
+      cell: ({ row }) => {
+        if (!row || !row.original) return null;
+        const value = row.original.proxAso;
         if (!value) return 'N/A';
         
         const dataASO = new Date(value);

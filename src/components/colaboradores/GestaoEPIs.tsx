@@ -271,7 +271,9 @@ const GestaoEPIs: React.FC<GestaoEPIsProps> = ({ colaboradorId }) => {
     { 
       header: 'Data Entrega', 
       accessorKey: 'data_entrega',
-      cell: (value: string) => {
+      cell: ({ row }) => {
+        if (!row || !row.original) return null;
+        const value = row.original.data_entrega;
         const data = new Date(value);
         return data.toLocaleDateString('pt-BR');
       }
@@ -279,7 +281,9 @@ const GestaoEPIs: React.FC<GestaoEPIsProps> = ({ colaboradorId }) => {
     { 
       header: 'Vencimento', 
       accessorKey: 'data_vencimento',
-      cell: (value: string) => {
+      cell: ({ row }) => {
+        if (!row || !row.original) return null;
+        const value = row.original.data_vencimento;
         const data = new Date(value);
         return data.toLocaleDateString('pt-BR');
       }
@@ -291,7 +295,10 @@ const GestaoEPIs: React.FC<GestaoEPIsProps> = ({ colaboradorId }) => {
     { 
       header: 'Status', 
       accessorKey: 'status',
-      cell: (value: string) => {
+      cell: ({ row }) => {
+        if (!row || !row.original) return null;
+        const value = row.original.status;
+        
         let badgeClass = "";
         let icon = null;
         
@@ -327,12 +334,12 @@ const GestaoEPIs: React.FC<GestaoEPIsProps> = ({ colaboradorId }) => {
     { 
       header: 'Ações', 
       accessorKey: 'acoes',
-      cell: (info: any) => {
-        if (!info || !info.row) {
+      cell: ({ row }) => {
+        if (!row || !row.original) {
           return null;
         }
         
-        const epi = info.row.original;
+        const epi = row.original;
         return (
           <div className="flex gap-2">
             <Button variant="outline" size="sm" className="text-xs h-8">
@@ -364,7 +371,9 @@ const GestaoEPIs: React.FC<GestaoEPIsProps> = ({ colaboradorId }) => {
     { 
       header: 'Data Entrega', 
       accessorKey: 'data_entrega',
-      cell: (value: string) => {
+      cell: ({ row }) => {
+        if (!row || !row.original) return null;
+        const value = row.original.data_entrega;
         const data = new Date(value);
         return data.toLocaleDateString('pt-BR');
       }
@@ -372,7 +381,9 @@ const GestaoEPIs: React.FC<GestaoEPIsProps> = ({ colaboradorId }) => {
     { 
       header: 'Data Devolução', 
       accessorKey: 'data_devolucao',
-      cell: (value: string) => {
+      cell: ({ row }) => {
+        if (!row || !row.original) return null;
+        const value = row.original.data_devolucao;
         const data = new Date(value);
         return data.toLocaleDateString('pt-BR');
       }
@@ -384,7 +395,10 @@ const GestaoEPIs: React.FC<GestaoEPIsProps> = ({ colaboradorId }) => {
     { 
       header: 'Estado', 
       accessorKey: 'estado_conservacao',
-      cell: (value: string) => {
+      cell: ({ row }) => {
+        if (!row || !row.original) return null;
+        const value = row.original.estado_conservacao;
+        
         let badgeClass = "";
         
         switch(value) {
@@ -414,7 +428,10 @@ const GestaoEPIs: React.FC<GestaoEPIsProps> = ({ colaboradorId }) => {
     { 
       header: 'Status', 
       accessorKey: 'status',
-      cell: (value: string) => {
+      cell: ({ row }) => {
+        if (!row || !row.original) return null;
+        const value = row.original.status;
+        
         let badgeClass = "";
         
         switch(value) {
@@ -438,19 +455,13 @@ const GestaoEPIs: React.FC<GestaoEPIsProps> = ({ colaboradorId }) => {
     { 
       header: 'Ações', 
       accessorKey: 'acoes',
-      cell: (info: any) => {
-        if (!info) {
-          return null;
-        }
-        
-        return (
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="text-xs h-8">
-              <Clipboard className="h-3 w-3 mr-1" /> Termo
-            </Button>
-          </div>
-        );
-      }
+      cell: () => (
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="text-xs h-8">
+            <Clipboard className="h-3 w-3 mr-1" /> Termo
+          </Button>
+        </div>
+      )
     },
   ];
 

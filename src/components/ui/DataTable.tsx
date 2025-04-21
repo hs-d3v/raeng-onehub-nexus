@@ -21,7 +21,7 @@ import { ChevronLeft, ChevronRight, Search, SlidersHorizontal } from 'lucide-rea
 interface Column {
   header: string;
   accessorKey: string;
-  cell?: (info: any) => React.ReactNode;
+  cell?: (info: { row: { original: any } }) => React.ReactNode;
 }
 
 interface DataTableProps {
@@ -85,7 +85,7 @@ const DataTable: React.FC<DataTableProps> = ({
               Filtros
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-64 p-4">
+          <DropdownMenuContent className="w-64 p-4">
             <div className="space-y-4">
               {columns.map(column => (
                 <div key={column.accessorKey} className="space-y-2">
@@ -126,7 +126,7 @@ const DataTable: React.FC<DataTableProps> = ({
                   {columns.map((column) => (
                     <TableCell key={column.accessorKey}>
                       {column.cell 
-                        ? column.cell({ row: { original: row } }) 
+                        ? column.cell({ row: { original: row } })
                         : row[column.accessorKey]}
                     </TableCell>
                   ))}
