@@ -167,7 +167,7 @@ const ContratosPage = () => {
     { 
       header: 'Ações', 
       accessorKey: 'acoes',
-      cell: () => (
+      cell: ({ row }) => (
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="text-xs h-8">
             <FileText className="h-3 w-3 mr-1" /> Detalhes
@@ -218,7 +218,7 @@ const ContratosPage = () => {
     { 
       header: 'Ações', 
       accessorKey: 'acoes',
-      cell: () => (
+      cell: ({ row }) => (
         <Button variant="outline" size="sm" className="text-xs h-8">
           <FileText className="h-3 w-3 mr-1" /> Visualizar
         </Button>

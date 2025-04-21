@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { 
-  Book, Calendar, Certificate, CheckCircle, Clock, Download, FileText, 
+  Book, Calendar, Award, CheckCircle, Clock, Download, FileText, 
   GraduationCap, MoreVertical, PlusCircle, Upload, User
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -198,13 +198,13 @@ const TreinamentosCertificacoes: React.FC<TreinamentosCertificacoesProps> = ({ c
     { 
       header: 'Ações', 
       accessorKey: 'acoes',
-      cell: () => (
+      cell: ({ row }) => (
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="text-xs h-8">
             <FileText className="h-3 w-3 mr-1" /> Detalhes
           </Button>
           <Button variant="outline" size="sm" className="text-xs h-8">
-            <Certificate className="h-3 w-3 mr-1" /> Certificado
+            <Award className="h-3 w-3 mr-1" /> Certificado
           </Button>
         </div>
       )
@@ -265,7 +265,7 @@ const TreinamentosCertificacoes: React.FC<TreinamentosCertificacoesProps> = ({ c
     { 
       header: 'Ações', 
       accessorKey: 'acoes',
-      cell: () => (
+      cell: ({ row }) => (
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="text-xs h-8">
             <FileText className="h-3 w-3 mr-1" /> Visualizar
@@ -385,7 +385,7 @@ const TreinamentosCertificacoes: React.FC<TreinamentosCertificacoesProps> = ({ c
               <p className="font-medium">{certificacoes.filter(c => c.status === 'valido').length} itens</p>
             </div>
             <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
-              <Certificate className="h-6 w-6 text-blue-500" />
+              <Award className="h-6 w-6 text-blue-500" />
             </div>
           </div>
           
@@ -426,7 +426,7 @@ const TreinamentosCertificacoes: React.FC<TreinamentosCertificacoesProps> = ({ c
           
           <TabsContent value="necessidades" className="pt-4">
             <DataTable
-              columns={necessidadesColumns}
+              columns={necessidadesColumns ? necessidadesColumns : []}
               data={necessidades}
               itemsPerPage={5}
             />

@@ -1,11 +1,10 @@
-
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import DataTable from '@/components/ui/DataTable';
+import DataTable, { Column } from '@/components/ui/DataTable';
 import BarChart from '@/components/charts/BarChart';
 import { AlertCircle, Clock, HardHat, Plus, Search, Truck, Filter, Download, ShoppingCart, Calendar, MapPin } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
@@ -45,27 +44,31 @@ const EPIsPage = () => {
   ];
   
   // Dados simulados para a tabela de EPIs
-  const episColumns = [
+  const episColumns: Column[] = [
     { 
       header: 'EPI', 
       accessorKey: 'epi',
-      cell: ({ nome, foto, codigo }: { nome: string, foto: string, codigo: string }) => (
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-gray-100 rounded-md flex items-center justify-center">
-            <HardHat className="h-6 w-6 text-gray-600" />
+      cell: ({ row }) => {
+        const { nome, foto, codigo } = row.original.epi;
+        return (
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 bg-gray-100 rounded-md flex items-center justify-center">
+              <HardHat className="h-6 w-6 text-gray-600" />
+            </div>
+            <div>
+              <p className="font-medium text-sm">{nome}</p>
+              <p className="text-xs text-gray-500">Cód: {codigo}</p>
+            </div>
           </div>
-          <div>
-            <p className="font-medium text-sm">{nome}</p>
-            <p className="text-xs text-gray-500">Cód: {codigo}</p>
-          </div>
-        </div>
-      )
+        );
+      }
     },
     { header: 'Categoria', accessorKey: 'categoria' },
     { 
       header: 'Estoque', 
       accessorKey: 'estoque',
-      cell: ({ atual, minimo, maximo }: { atual: number, minimo: number, maximo: number }) => {
+      cell: ({ row }) => {
+        const { atual, minimo, maximo } = row.original.estoque;
         const porcentagem = (atual / maximo) * 100;
         let statusColor = "bg-green-500";
         
@@ -89,7 +92,8 @@ const EPIsPage = () => {
     { 
       header: 'Status', 
       accessorKey: 'status',
-      cell: (value: string) => {
+      cell: ({ row }) => {
+        const value = row.original.status;
         let badgeClass = "";
         switch(value) {
           case 'Adequado':
@@ -113,7 +117,7 @@ const EPIsPage = () => {
     { 
       header: 'Ações', 
       accessorKey: 'acoes',
-      cell: () => (
+      cell: ({ row }) => (
         <div className="flex gap-1">
           <Button variant="ghost" size="icon" className="h-8 w-8">
             <ShoppingCart className="h-4 w-4" />
