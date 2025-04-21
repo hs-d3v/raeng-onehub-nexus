@@ -1,3 +1,4 @@
+
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import StatsCard from '@/components/widgets/StatsCard';
@@ -33,19 +34,58 @@ const DashboardPage = () => {
   ];
   
   const consumoEPIsData = [
-    { name: 'Capacetes', Jan: 25, Fev: 18, Mar: 22, Abr: 30, Mai: 28, Jun: 32 },
-    { name: 'Luvas', Jan: 85, Fev: 78, Mar: 92, Abr: 80, Mai: 88, Jun: 95 },
-    { name: 'Óculos', Jan: 45, Fev: 38, Mar: 42, Abr: 50, Mai: 48, Jun: 52 },
-    { name: 'Protetor', Jan: 35, Fev: 38, Mar: 32, Abr: 30, Mai: 35, Jun: 38 },
+    { name: 'Jan', Capacetes: 25, Luvas: 85, Óculos: 45, Protetores: 35 },
+    { name: 'Fev', Capacetes: 18, Luvas: 78, Óculos: 38, Protetores: 38 },
+    { name: 'Mar', Capacetes: 22, Luvas: 92, Óculos: 42, Protetores: 32 },
+    { name: 'Abr', Capacetes: 30, Luvas: 80, Óculos: 50, Protetores: 30 },
+    { name: 'Mai', Capacetes: 28, Luvas: 88, Óculos: 48, Protetores: 35 },
+    { name: 'Jun', Capacetes: 32, Luvas: 95, Óculos: 52, Protetores: 38 },
   ];
   
   const consumoEPIsKeys = [
-    { key: 'Jan', name: 'Janeiro', color: '#2563eb' },
-    { key: 'Fev', name: 'Fevereiro', color: '#16a34a' },
-    { key: 'Mar', name: 'Março', color: '#ea580c' },
-    { key: 'Abr', name: 'Abril', color: '#7c3aed' },
-    { key: 'Mai', name: 'Maio', color: '#0891b2' },
-    { key: 'Jun', name: 'Junho', color: '#db2777' },
+    { key: 'Capacetes', name: 'Capacetes', color: '#2563eb' },
+    { key: 'Luvas', name: 'Luvas', color: '#16a34a' },
+    { key: 'Óculos', name: 'Óculos', color: '#ea580c' },
+    { key: 'Protetores', name: 'Protetores', color: '#7c3aed' },
+  ];
+  
+  // Define alertasData which was missing
+  const alertasData = [
+    {
+      id: 1,
+      tipo: 'Contrato',
+      descricao: 'Contrato 2023-05 próximo ao vencimento',
+      prioridade: 'Alta',
+      vencimento: '28/07/2023'
+    },
+    {
+      id: 2,
+      tipo: 'EPI',
+      descricao: 'Estoque de capacetes abaixo do mínimo',
+      prioridade: 'Média',
+      vencimento: '22/07/2023'
+    },
+    {
+      id: 3,
+      tipo: 'Manutenção',
+      descricao: 'Manutenção preventiva de betoneira pendente',
+      prioridade: 'Alta',
+      vencimento: '20/07/2023'
+    },
+    {
+      id: 4,
+      tipo: 'Contrato',
+      descricao: 'Renovação de contrato de fornecimento pendente',
+      prioridade: 'Média',
+      vencimento: '05/08/2023'
+    },
+    {
+      id: 5,
+      tipo: 'EPI',
+      descricao: 'Validade de lote de luvas próxima',
+      prioridade: 'Baixa',
+      vencimento: '15/08/2023'
+    }
   ];
   
   const alertasColumns = [

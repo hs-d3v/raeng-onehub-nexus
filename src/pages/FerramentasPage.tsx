@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import DataTable from '@/components/ui/DataTable';
+import DataTable, { Column } from '@/components/ui/DataTable';
 import StatsCard from '@/components/widgets/StatsCard';
 import { Plus, Search, Filter, Download, Tag, Wrench, Check, AlertTriangle, Clock, User, Calendar, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -22,28 +22,32 @@ const FerramentasPage = () => {
   ];
   
   // Dados simulados para a tabela de ferramentas
-  const ferramentasColumns = [
+  const ferramentasColumns: Column[] = [
     { 
       header: 'Ferramenta', 
       accessorKey: 'ferramenta',
-      cell: ({ nome, codigo }: { nome: string, codigo: string }) => (
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-gray-100 rounded-md flex items-center justify-center">
-            <Wrench className="h-6 w-6 text-gray-600" />
+      cell: ({ row }) => {
+        const { nome, codigo } = row.original.ferramenta;
+        return (
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 bg-gray-100 rounded-md flex items-center justify-center">
+              <Wrench className="h-6 w-6 text-gray-600" />
+            </div>
+            <div>
+              <p className="font-medium text-sm">{nome}</p>
+              <p className="text-xs text-gray-500">Cód: {codigo}</p>
+            </div>
           </div>
-          <div>
-            <p className="font-medium text-sm">{nome}</p>
-            <p className="text-xs text-gray-500">Cód: {codigo}</p>
-          </div>
-        </div>
-      )
+        );
+      }
     },
     { header: 'Categoria', accessorKey: 'categoria' },
     { header: 'Patrimônio', accessorKey: 'patrimonio' },
     { 
       header: 'Status', 
       accessorKey: 'status',
-      cell: (value: string) => {
+      cell: ({ row }) => {
+        const value = row.original.status;
         let badgeClass = "";
         switch(value) {
           case 'Disponível':
@@ -67,7 +71,8 @@ const FerramentasPage = () => {
     { 
       header: 'Responsável', 
       accessorKey: 'responsavel',
-      cell: (value: {nome: string, foto: string} | null) => {
+      cell: ({ row }) => {
+        const value = row.original.responsavel;
         if (!value) return <span className="text-sm text-gray-500">-</span>;
         
         return (

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -117,7 +118,7 @@ const EPIsPage = () => {
     { 
       header: 'Ações', 
       accessorKey: 'acoes',
-      cell: ({ row }) => (
+      cell: () => (
         <div className="flex gap-1">
           <Button variant="ghost" size="icon" className="h-8 w-8">
             <ShoppingCart className="h-4 w-4" />
