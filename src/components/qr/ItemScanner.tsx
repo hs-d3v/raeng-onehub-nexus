@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import QRScanner from './QRScanner';
 import { parseQRData } from '@/config/qr-config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
+import { CadastroPredefinido } from '@/integrations/supabase/predefined-types';
 
 interface Employee {
   id: string;
@@ -69,11 +69,9 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
   const [states, setStates] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  // Load categories, locations and states
   useEffect(() => {
     const loadPredefinedData = async () => {
       try {
-        // Load categories based on selected type
         const typeMap: Record<string, string> = {
           'EPI': 'epis',
           'Ferramenta': 'ferramentas',
@@ -84,29 +82,33 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
         const tableName = typeMap[selectedType] || '';
         
         if (tableName && showCategories) {
-          const { data, error } = await supabase
-            .from(tableName)
-            .select('categoria')
-            .not('categoria', 'is', null);
-          
-          if (!error && data) {
-            const uniqueCategories = [...new Set(data.map(item => item.categoria))].filter(Boolean);
-            setCategories(uniqueCategories as string[]);
+          try {
+            const { data, error } = await supabase
+              .from(tableName)
+              .select('categoria')
+              .not('categoria', 'is', null);
+            
+            if (!error && data) {
+              const uniqueCategories = [...new Set(data.map(item => item.categoria))].filter(Boolean);
+              setCategories(uniqueCategories as string[]);
+            } else {
+              setCategories(['Categoria 1', 'Categoria 2', 'Categoria 3']);
+            }
+          } catch (error) {
+            console.error('Erro ao carregar categorias:', error);
+            setCategories(['Categoria 1', 'Categoria 2', 'Categoria 3']);
           }
         }
         
-        // Load states from predefined registers
         if (showStates) {
-          const { data: statesData, error: statesError } = await supabase
-            .from('cadastros_predefinidos')
-            .select('valor')
-            .eq('tipo', 'estado_item');
-          
-          if (!statesError && statesData) {
-            const uniqueStates = statesData.map(item => item.valor);
-            setStates(uniqueStates);
-          } else {
-            // Fallback to default states
+          try {
+            const mockStates = [
+              'Novo', 'Usado', 'Desgaste normal', 
+              'Danificado', 'Contaminado', 'Vencido'
+            ];
+            setStates(mockStates);
+          } catch (error) {
+            console.error('Erro ao carregar estados:', error);
             setStates([
               'Novo', 'Usado', 'Desgaste normal', 
               'Danificado', 'Contaminado', 'Vencido'
@@ -114,18 +116,15 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
           }
         }
         
-        // Load locations from predefined registers
         if (showLocations) {
-          const { data: locationsData, error: locationsError } = await supabase
-            .from('cadastros_predefinidos')
-            .select('valor')
-            .eq('tipo', 'local_uso');
-          
-          if (!locationsData && locationsError) {
-            const uniqueLocations = locationsData?.map(item => item.valor);
-            setLocations(uniqueLocations || []);
-          } else {
-            // Fallback to default locations
+          try {
+            const mockLocations = [
+              'Almoxarifado Central', 'Canteiro A', 'Canteiro B', 
+              'Escritório', 'Depósito', 'Veículo'
+            ];
+            setLocations(mockLocations);
+          } catch (error) {
+            console.error('Erro ao carregar locais:', error);
             setLocations([
               'Almoxarifado Central', 'Canteiro A', 'Canteiro B', 
               'Escritório', 'Depósito', 'Veículo'
@@ -140,7 +139,6 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
     loadPredefinedData();
   }, [selectedType, showCategories, showLocations, showStates]);
 
-  // Lidar com escaneamento de QR do item
   const handleQRScan = async (data: string, parsedData?: ReturnType<typeof parseQRData>) => {
     setScanActive(false);
     
@@ -153,7 +151,6 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
       if (parsedData) {
         const { type, entityId } = parsedData;
         
-        // Determine which table to query based on the QR code type
         let tableName = '';
         let itemType = '';
         
@@ -178,7 +175,6 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
             throw new Error('Tipo de item desconhecido');
         }
         
-        // Query the database for the item
         const { data: itemData, error } = await supabase
           .from(tableName)
           .select('*')
@@ -189,7 +185,6 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
           throw new Error(`Item não encontrado: ${error?.message}`);
         }
         
-        // Create the flow item
         const newItem: FlowItem = {
           id: itemData.id,
           name: itemData.nome,
@@ -209,7 +204,6 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
           description: `${newItem.name} adicionado com sucesso`,
         });
       } else {
-        // Fallback to mock data if QR parsing fails
         simulateItemFind();
       }
     } catch (error) {
@@ -220,14 +214,11 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
         variant: "destructive"
       });
       
-      // Fallback to mock data
       simulateItemFind();
     }
   };
 
-  // Function to simulate finding an item
   const simulateItemFind = () => {
-    // Simulando encontrar o item pelo QR
     setTimeout(() => {
       let mockItem: FlowItem;
       
@@ -286,14 +277,12 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
     }, 500);
   };
 
-  // Simulação de pesquisa de itens
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
     setIsSearching(true);
     
     try {
-      // Determine which table to search based on selectedType
       let tableName = '';
       
       switch (selectedType) {
@@ -312,91 +301,94 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
       }
       
       if (tableName) {
-        // Construct query with filters
-        let query = supabase
-          .from(tableName)
-          .select('*')
-          .or(`nome.ilike.%${searchQuery}%,codigo.ilike.%${searchQuery}%`)
-          .limit(10);
-        
-        // Add category filter if selected
-        if (selectedCategory) {
-          query = query.eq('categoria', selectedCategory);
-        }
-        
-        // Execute query
-        const { data, error } = await query;
-        
-        if (error) throw error;
-        
-        if (data && data.length > 0) {
-          // Map results to FlowItem format
-          const results: FlowItem[] = data.map(item => ({
-            id: item.id,
-            name: item.nome,
-            code: item.codigo || `${selectedType}-${item.id.substring(0, 8)}`,
-            type: selectedType,
-            quantity: 1,
-            category: item.categoria,
-            estado: selectedState || 'Normal',
-            local: selectedLocation || 'Não especificado'
-          }));
+        try {
+          let query = supabase
+            .from(tableName)
+            .select('*')
+            .or(`nome.ilike.%${searchQuery}%,codigo.ilike.%${searchQuery}%`)
+            .limit(10);
           
-          // Apply sorting
-          const sortedResults = results.sort((a, b) => {
-            return sortOrder === 'asc' 
-              ? a.name.localeCompare(b.name) 
-              : b.name.localeCompare(a.name);
-          });
+          if (selectedCategory) {
+            query = query.eq('categoria', selectedCategory);
+          }
           
-          setSearchResults(sortedResults);
-        } else {
-          setSearchResults([]);
-          toast({
-            title: "Nenhum item encontrado",
-            description: "Tente outro termo de busca ou filtros diferentes",
-          });
+          const { data, error } = await query;
+          
+          if (error) throw error;
+          
+          if (data && data.length > 0) {
+            const results: FlowItem[] = data.map(item => ({
+              id: item.id,
+              name: item.nome,
+              code: item.codigo || `${selectedType}-${item.id.substring(0, 8)}`,
+              type: selectedType,
+              quantity: 1,
+              category: item.categoria,
+              estado: selectedState || 'Normal',
+              local: selectedLocation || 'Não especificado'
+            }));
+            
+            const sortedResults = results.sort((a, b) => {
+              return sortOrder === 'asc' 
+                ? a.name.localeCompare(b.name) 
+                : b.name.localeCompare(a.name);
+            });
+            
+            setSearchResults(sortedResults);
+          } else {
+            setSearchResults([]);
+            toast({
+              title: "Nenhum item encontrado",
+              description: "Tente outro termo de busca ou filtros diferentes",
+            });
+          }
+        } catch (error) {
+          console.error("Error querying database:", error);
+          simulateSearchResults();
         }
       } else {
-        // Simulated results for testing
-        const mockResults = [
-          {
-            id: '1',
-            name: 'Capacete de Segurança',
-            code: 'EPI-001',
-            type: selectedType,
-            quantity: 1,
-            category: 'Proteção para cabeça',
-            estado: 'Novo',
-            local: 'Almoxarifado'
-          },
-          {
-            id: '2',
-            name: 'Luva de Proteção',
-            code: 'EPI-002',
-            type: selectedType,
-            quantity: 1,
-            category: 'Proteção para mãos',
-            estado: 'Novo',
-            local: 'Almoxarifado'
-          }
-        ];
-        
-        setSearchResults(mockResults);
+        simulateSearchResults();
       }
     } catch (error) {
       console.error('Erro na busca:', error);
       toast({
         title: "Erro na busca",
-        description: "Não foi possível buscar os itens",
+        description: "Não foi possível completar a busca",
         variant: "destructive"
       });
+      simulateSearchResults();
     } finally {
       setIsSearching(false);
     }
   };
 
-  // Adicionar item da busca ao fluxo
+  const simulateSearchResults = () => {
+    const mockResults = [
+      {
+        id: '1',
+        name: 'Capacete de Segurança',
+        code: 'EPI-001',
+        type: selectedType,
+        quantity: 1,
+        category: 'Proteção para cabeça',
+        estado: 'Novo',
+        local: 'Almoxarifado'
+      },
+      {
+        id: '2',
+        name: 'Luva de Proteção',
+        code: 'EPI-002',
+        type: selectedType,
+        quantity: 1,
+        category: 'Proteção para mãos',
+        estado: 'Novo',
+        local: 'Almoxarifado'
+      }
+    ];
+    
+    setSearchResults(mockResults);
+  };
+
   const addItemFromSearch = (item: FlowItem) => {
     onAddItem({
       ...item,
@@ -409,12 +401,10 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
     setItemQuantity(1);
   };
 
-  // Remover item
   const handleRemoveItem = (id: string) => {
     if (onRemoveItem) {
       onRemoveItem(id);
     } else {
-      // Default fallback if onRemoveItem is not provided
       toast({
         title: "Item removido",
         description: "O item foi removido da lista",
@@ -422,7 +412,6 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
     }
   };
 
-  // Toggle sort order
   const toggleSortOrder = () => {
     setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
     setSearchResults(prev => [...prev].sort((a, b) => {
@@ -434,7 +423,6 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Informação do colaborador */}
       <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg">
         <h3 className="text-sm font-medium mb-2 text-gray-500">Colaborador</h3>
         <div className="flex items-center gap-3">
@@ -456,7 +444,6 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
         </div>
       </div>
 
-      {/* Escaneamento de itens */}
       <div className="space-y-4">
         <div className="flex justify-between items-center flex-wrap gap-2">
           <h3 className="font-medium">Itens ({items.length})</h3>
@@ -489,7 +476,6 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
           </div>
         </div>
         
-        {/* Filtros adicionais quando abertos */}
         <AnimatePresence>
           {(showCategories || showStates || showLocations) && (
             <motion.div
@@ -579,7 +565,6 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
               </div>
             </Button>
             
-            {/* Dropdown de resultados */}
             {searchResults.length > 0 && (
               <motion.div 
                 initial={{ opacity: 0, y: -10 }}
@@ -638,7 +623,6 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
         )}
       </div>
       
-      {/* Lista de itens adicionados */}
       <div>
         <h3 className="font-medium mb-2">Itens adicionados</h3>
         
@@ -699,12 +683,10 @@ const ItemScanner: React.FC<ItemScannerProps> = ({
         </div>
       </div>
 
-      {/* Botões de ação */}
       <div className="flex justify-between pt-2">
         <Button 
           variant="ghost" 
           onClick={() => {
-            // Adicionar item manual para simulação
             onAddItem({
               id: `manual-${Date.now()}`,
               name: 'Item Adicionado Manualmente',

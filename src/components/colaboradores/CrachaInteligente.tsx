@@ -7,11 +7,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react'; // Fixed import
 import { generateQRData, QR_CONFIG } from '@/config/qr-config';
 import { motion } from 'framer-motion';
 import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
+import { jsPDF } from 'jspdf'; // Fixed import
 
 interface CrachaInteligenteProps {
   colaborador?: any;

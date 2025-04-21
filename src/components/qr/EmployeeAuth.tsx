@@ -1,11 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Badge, QrCode, Search, User, CheckCircle, Fingerprint, Camera, AlertCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { QrCode, Search, User, CheckCircle, Fingerprint, Camera, AlertCircle, X } from 'lucide-react';
 import QRScanner from './QRScanner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,14 +42,11 @@ const EmployeeAuth: React.FC<EmployeeAuthProps> = ({ onAuthenticated }) => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const faceDetectionIntervalRef = React.useRef<number | null>(null);
 
-  // Load Face-API.js models
   useEffect(() => {
     const loadFaceApiModels = async () => {
       try {
-        // Check if models are already loaded
         if (faceApiLoaded) return;
         
-        // Load models from public folder
         await Promise.all([
           faceapi.nets.tinyFaceDetector.load('/models'),
           faceapi.nets.faceLandmark68Net.load('/models'),
@@ -71,13 +68,11 @@ const EmployeeAuth: React.FC<EmployeeAuthProps> = ({ onAuthenticated }) => {
     loadFaceApiModels();
     
     return () => {
-      // Clean up any camera streams when component unmounts
       if (videoRef.current && videoRef.current.srcObject) {
         const stream = videoRef.current.srcObject as MediaStream;
         stream.getTracks().forEach(track => track.stop());
       }
       
-      // Clear face detection interval
       if (faceDetectionIntervalRef.current) {
         clearInterval(faceDetectionIntervalRef.current);
         faceDetectionIntervalRef.current = null;
@@ -85,9 +80,7 @@ const EmployeeAuth: React.FC<EmployeeAuthProps> = ({ onAuthenticated }) => {
     };
   }, [toast, faceApiLoaded]);
 
-  // Verificar se já tem usuário logado
   useEffect(() => {
-    // Verificamos se há um usuário autenticado para mostrar informações relevantes
     if (authenticatedUser) {
       toast({
         title: "Sistema iniciado",
@@ -96,7 +89,6 @@ const EmployeeAuth: React.FC<EmployeeAuthProps> = ({ onAuthenticated }) => {
     }
   }, [authenticatedUser, toast]);
 
-  // Start face detection
   const startFaceDetection = async () => {
     if (!faceApiLoaded) {
       toast({
@@ -122,11 +114,9 @@ const EmployeeAuth: React.FC<EmployeeAuthProps> = ({ onAuthenticated }) => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         
-        // Wait for video to be ready
         videoRef.current.onloadedmetadata = () => {
           if (!canvasRef.current || !videoRef.current) return;
           
-          // Setup canvas
           const displaySize = { 
             width: videoRef.current.videoWidth, 
             height: videoRef.current.videoHeight 
@@ -135,7 +125,6 @@ const EmployeeAuth: React.FC<EmployeeAuthProps> = ({ onAuthenticated }) => {
           canvasRef.current.width = displaySize.width;
           canvasRef.current.height = displaySize.height;
           
-          // Start face detection loop
           if (faceDetectionIntervalRef.current) {
             clearInterval(faceDetectionIntervalRef.current);
           }
@@ -143,13 +132,11 @@ const EmployeeAuth: React.FC<EmployeeAuthProps> = ({ onAuthenticated }) => {
           faceDetectionIntervalRef.current = window.setInterval(async () => {
             if (!videoRef.current || !canvasRef.current) return;
             
-            // Only proceed if the tab is still active
             if (activeTab !== 'facial') {
               stopFaceDetection();
               return;
             }
             
-            // Detect faces
             const detections = await faceapi.detectAllFaces(
               videoRef.current,
               new faceapi.TinyFaceDetectorOptions({
@@ -158,21 +145,16 @@ const EmployeeAuth: React.FC<EmployeeAuthProps> = ({ onAuthenticated }) => {
               })
             ).withFaceLandmarks().withFaceDescriptors();
             
-            // Update detected faces count
             setDetectedFaces(detections.length);
             
-            // Draw detections on canvas
             const context = canvasRef.current.getContext('2d');
             if (context) {
               context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
               
-              // Draw face detections
               faceapi.draw.drawDetections(canvasRef.current, detections);
               faceapi.draw.drawFaceLandmarks(canvasRef.current, detections);
               
-              // If a face is detected for a few seconds, proceed with authentication
               if (detections.length === 1) {
-                // Collect data for 3 seconds to ensure it's a real face and not a photo
                 setTimeout(() => {
                   if (detections.length === 1 && !processingBiometric && activeTab === 'facial') {
                     handleBiometric('facial');
@@ -194,7 +176,6 @@ const EmployeeAuth: React.FC<EmployeeAuthProps> = ({ onAuthenticated }) => {
     }
   };
 
-  // Stop face detection
   const stopFaceDetection = () => {
     setIsFaceScanActive(false);
     
@@ -210,24 +191,20 @@ const EmployeeAuth: React.FC<EmployeeAuthProps> = ({ onAuthenticated }) => {
     }
   };
 
-  // Start digital scan simulation
   const startDigitalScan = () => {
     setIsDigitalScanActive(true);
     
-    // Simulate fingerprint scanning
     setTimeout(() => {
       handleBiometric('digital');
     }, 2500);
   };
 
-  // Simulação de pesquisa de colaboradores (em produção, isso buscaria do banco)
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
     setIsSearching(true);
     
     try {
-      // Em um ambiente real, buscaria do banco de dados
       const { data: colaboradores, error } = await supabase
         .from('colaboradores')
         .select('*')
@@ -266,7 +243,6 @@ const EmployeeAuth: React.FC<EmployeeAuthProps> = ({ onAuthenticated }) => {
     }
   };
 
-  // Lidar com escaneamento de QR do crachá
   const handleQRScan = async (data: string, parsedData?: ReturnType<typeof parseQRData>) => {
     setScanActive(false);
     
@@ -276,7 +252,6 @@ const EmployeeAuth: React.FC<EmployeeAuthProps> = ({ onAuthenticated }) => {
     });
     
     try {
-      // Check if the parsedData indicates this is an employee badge
       const isEmployeeBadge = parsedData?.type === 'employee';
       
       if (!isEmployeeBadge) {
@@ -288,7 +263,6 @@ const EmployeeAuth: React.FC<EmployeeAuthProps> = ({ onAuthenticated }) => {
         return;
       }
       
-      // Chamar a edge function para autenticar via QR code
       const { data: response, error } = await supabase.functions.invoke('verificar-qr-code', {
         body: { qrHash: data }
       });
@@ -325,27 +299,19 @@ const EmployeeAuth: React.FC<EmployeeAuthProps> = ({ onAuthenticated }) => {
     }
   };
 
-  // Lidar com autenticação biométrica (facial ou digital)
   const handleBiometric = async (type: 'facial' | 'digital') => {
     setProcessingBiometric(true);
     
     try {
-      // Stop facial scanning if active
       if (type === 'facial' && isFaceScanActive) {
         stopFaceDetection();
       }
       
-      // Generate biometric data
       let biometricData;
       
-      // In a real application, you'd collect actual biometric data from the camera or fingerprint scanner
       if (type === 'facial' && videoRef.current) {
-        // For facial biometrics, we could capture a frame from the video
-        // Here we're just simulating with a timestamp
         biometricData = `FACIAL-${Date.now()}`;
       } else if (type === 'digital') {
-        // For fingerprint, we'd get data from a fingerprint reader
-        // Here we're simulating with a random ID
         biometricData = `DIGITAL-${Math.random().toString(36).substring(2, 15)}`;
         setIsDigitalScanActive(false);
       }
@@ -355,12 +321,11 @@ const EmployeeAuth: React.FC<EmployeeAuthProps> = ({ onAuthenticated }) => {
         description: "Aguarde um momento...",
       });
       
-      // Call the Edge Function
       const { data: response, error } = await supabase.functions.invoke('processar-biometria', {
         body: { 
           tipoBiometria: type, 
           dadosBiometricos: biometricData,
-          empresaId: "empresa-simulada" // In a real app, you'd use the actual company ID
+          empresaId: "empresa-simulada"
         }
       });
       
@@ -397,19 +362,15 @@ const EmployeeAuth: React.FC<EmployeeAuthProps> = ({ onAuthenticated }) => {
     }
   };
 
-  // Handle tab change
   useEffect(() => {
-    // When switching away from facial tab, stop facial detection
     if (activeTab !== 'facial' && isFaceScanActive) {
       stopFaceDetection();
     }
     
-    // When switching to facial tab, start facial detection
     if (activeTab === 'facial' && !isFaceScanActive && faceApiLoaded) {
       startFaceDetection();
     }
     
-    // When switching away from digital tab, reset digital scan
     if (activeTab !== 'digital') {
       setIsDigitalScanActive(false);
     }
