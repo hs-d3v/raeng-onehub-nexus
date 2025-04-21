@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -91,12 +90,6 @@ const GestaoEPIs: React.FC<GestaoEPIsProps> = ({ colaboradorId }) => {
 
   const fetchEPIs = async () => {
     try {
-      // Em um ambiente real, buscaríamos os dados do Supabase
-      // const { data: epiData, error } = await supabase
-      //   .from('epi_entregas')
-      //   .select('*, epis(*)')
-      //   .eq('colaborador_id', colaboradorId);
-
       const epiAtivosData = [
         { 
           id: 'epi1',
@@ -234,14 +227,12 @@ const GestaoEPIs: React.FC<GestaoEPIsProps> = ({ colaboradorId }) => {
       return;
     }
 
-    // Remover do array de ativos
     const newAtivos = epiAtivos.filter(epi => epi.id !== selectedEpiId);
     setEPIAtivos(newAtivos);
     
     const newVencidos = epiVencidos.filter(epi => epi.id !== selectedEpiId);
     setEPIVencidos(newVencidos);
 
-    // Adicionar ao histórico
     const devolvido = {
       ...epiSelecionado,
       status: 'devolvido',
@@ -336,8 +327,12 @@ const GestaoEPIs: React.FC<GestaoEPIsProps> = ({ colaboradorId }) => {
     { 
       header: 'Ações', 
       accessorKey: 'acoes',
-      cell: ({ row }: any) => {
-        const epi = row.original;
+      cell: (info: any) => {
+        if (!info || !info.row) {
+          return null;
+        }
+        
+        const epi = info.row.original;
         return (
           <div className="flex gap-2">
             <Button variant="outline" size="sm" className="text-xs h-8">
@@ -443,13 +438,19 @@ const GestaoEPIs: React.FC<GestaoEPIsProps> = ({ colaboradorId }) => {
     { 
       header: 'Ações', 
       accessorKey: 'acoes',
-      cell: () => (
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="text-xs h-8">
-            <Clipboard className="h-3 w-3 mr-1" /> Termo
-          </Button>
-        </div>
-      )
+      cell: (info: any) => {
+        if (!info) {
+          return null;
+        }
+        
+        return (
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="text-xs h-8">
+              <Clipboard className="h-3 w-3 mr-1" /> Termo
+            </Button>
+          </div>
+        );
+      }
     },
   ];
 
@@ -555,7 +556,6 @@ const GestaoEPIs: React.FC<GestaoEPIsProps> = ({ colaboradorId }) => {
             </DialogContent>
           </Dialog>
           
-          {/* Diálogo de Devolução/Movimentação */}
           <Dialog open={isDevDialogOpen} onOpenChange={setIsDevDialogOpen}>
             <DialogContent>
               <DialogHeader>

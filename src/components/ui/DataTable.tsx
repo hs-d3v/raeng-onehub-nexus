@@ -21,7 +21,7 @@ import { ChevronLeft, ChevronRight, Search, SlidersHorizontal } from 'lucide-rea
 interface Column {
   header: string;
   accessorKey: string;
-  cell?: (value: any, row: any) => React.ReactNode;
+  cell?: (info: any) => React.ReactNode;
 }
 
 interface DataTableProps {
@@ -41,15 +41,15 @@ const DataTable: React.FC<DataTableProps> = ({
   const [search, setSearch] = useState('');
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
 
-  // Filtrar dados baseados na pesquisa
+  // Filter data based on search
   const filteredData = data.filter(item => {
-    // Filtro de busca geral
+    // General search filter
     const matchesSearch = search === '' || 
       Object.values(item).some(value => 
         String(value).toLowerCase().includes(search.toLowerCase())
       );
 
-    // Filtros por coluna
+    // Column filters
     const matchesColumnFilters = Object.entries(columnFilters).every(([key, value]) => {
       return value === '' || 
         String(item[key]).toLowerCase().includes(value.toLowerCase());
@@ -58,7 +58,7 @@ const DataTable: React.FC<DataTableProps> = ({
     return matchesSearch && matchesColumnFilters;
   });
 
-  // Paginação
+  // Pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
@@ -126,7 +126,7 @@ const DataTable: React.FC<DataTableProps> = ({
                   {columns.map((column) => (
                     <TableCell key={column.accessorKey}>
                       {column.cell 
-                        ? column.cell(row[column.accessorKey], { original: row }) 
+                        ? column.cell({ row: { original: row } }) 
                         : row[column.accessorKey]}
                     </TableCell>
                   ))}
